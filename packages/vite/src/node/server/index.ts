@@ -290,9 +290,13 @@ export interface ResolvedServerUrls {
   network: string[]
 }
 
+/*
+  创建服务
+*/
 export async function createServer(
   inlineConfig: InlineConfig = {}
 ): Promise<ViteDevServer> {
+  /* 合并配置代码 */
   const config = await resolveConfig(inlineConfig, 'serve', 'development')
   const { root, server: serverConfig } = config
   const httpsOptions = await resolveHttpsConfig(
