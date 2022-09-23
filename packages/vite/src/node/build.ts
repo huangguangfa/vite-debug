@@ -293,7 +293,7 @@ export function resolveBuildOptions(
 
   return resolved
 }
-
+// 把前置插件(pre)和后置(post)插件筛选出来
 export function resolveBuildPlugins(config: ResolvedConfig): {
   pre: Plugin[]
   post: Plugin[]

@@ -355,6 +355,9 @@ export type ResolveFn = (
   ssr?: boolean
 ) => Promise<string | undefined>
 
+/* 
+  导出vite所有的配置
+*/
 export async function resolveConfig(
   inlineConfig: InlineConfig,
   command: 'build' | 'serve',
@@ -454,7 +457,6 @@ export async function resolveConfig(
     normalPlugins(正常)
     postPlugins(后)
   */
-
   const [prePlugins, normalPlugins, postPlugins] =
     sortUserPlugins(rawUserPlugins)
 
@@ -462,7 +464,7 @@ export async function resolveConfig(
   const userPlugins = [...prePlugins, ...normalPlugins, ...postPlugins]
   // 执行插件队列中带有handler的方法、目的是为了往修改配置、得到最终的配置
   config = await runConfigHook(config, userPlugins, configEnv)
-  // 没有插件 COMMONJS 的测试
+  // 没有插件、 COMMONJS 的测试
   if (process.env.VITE_TEST_WITHOUT_PLUGIN_COMMONJS) {
     config = mergeConfig(config, {
       optimizeDeps: { disabled: false },
@@ -482,7 +484,7 @@ export async function resolveConfig(
     { find: /^[\/]?@vite\/client/, replacement: () => CLIENT_ENTRY }
   ]
 
-  // 合并内部客户端别名解析别名
+  // 合并内部客户端和用户配置 [别名] 解析
   const resolvedAlias = normalizeAlias(
     mergeAlias(
       // @ts-ignore because @rollup/plugin-alias' type doesn't allow function
@@ -592,7 +594,7 @@ export async function resolveConfig(
       )?.id
     }
   }
-  // 收集public目录文件夹
+  // 解析public目录文件夹
   const { publicDir } = config
   const resolvedPublicDir =
     publicDir !== false && publicDir !== ''
@@ -601,31 +603,39 @@ export async function resolveConfig(
           typeof publicDir === 'string' ? publicDir : 'public'
         )
       : ''
-
+  // 收集处理server服务的配置、主要涉及: 黑名单文件后缀列表、限制为工作区已外的文件获取、工作区的目录列表
   const server = resolveServerOptions(resolvedRoot, config.server, logger)
+  // 收集服务端ssr配置
   const ssr = resolveSSROptions(
     config.ssr,
     config.legacy?.buildSsrCjsExternalHeuristics,
     config.resolve?.preserveSymlinks
   )
-
+  // 是否已中间件模式创建Vite服务器
   const middlewareMode = config?.server?.middlewareMode
-
+  // 依赖优化选项
   const optimizeDeps = config.optimizeDeps || {}
-
+  // 全局基础路径
   const BASE_URL = resolvedBase
 
-  // resolve worker
+  // 合并出一个新的配置变量 workerConfig
   let workerConfig = mergeConfig({}, config)
+  /* 
+    区分出插件的顺序  enforce 的值可以是pre 或 post see https://cn.vitejs.dev/guide/api-plugin.html#plugin-ordering 
+    prePlugins (前)
+    normalPlugins(正常)
+    postPlugins(后)
+  */
   const [workerPrePlugins, workerNormalPlugins, workerPostPlugins] =
     sortUserPlugins(rawWorkerUserPlugins)
 
-  // run config hooks
+  // 执行插件队列中带有handler的方法、目的是为了往修改配置、得到最终的配置
   const workerUserPlugins = [
     ...workerPrePlugins,
     ...workerNormalPlugins,
     ...workerPostPlugins
   ]
+  // 和用户插件运行一样的规则: 执行插件队列中带有handler的方法、目的是为了往修改配置、得到最终的配置
   workerConfig = await runConfigHook(workerConfig, workerUserPlugins, configEnv)
   const resolvedWorkerOptions: ResolveWorkerOptions = {
     format: workerConfig.worker?.format || 'iife',
@@ -634,28 +644,31 @@ export async function resolveConfig(
     getSortedPlugins: undefined!,
     getSortedPluginHooks: undefined!
   }
-
+  // 合并最终的全局配置
   const resolvedConfig: ResolvedConfig = {
-    configFile: configFile ? normalizePath(configFile) : undefined,
-    configFileDependencies: configFileDependencies.map((name) =>
-      normalizePath(path.resolve(name))
+    configFile: configFile ? normalizePath(configFile) : undefined, // 最终的配置文件地址vite.config.xxx
+    configFileDependencies: configFileDependencies.map(
+      (
+        name // 配置文件的依赖项地址['xxx', 'xxx']
+      ) => normalizePath(path.resolve(name))
     ),
-    inlineConfig,
-    root: resolvedRoot,
-    base: resolvedBase,
-    resolve: resolveOptions,
-    publicDir: resolvedPublicDir,
-    cacheDir,
-    command,
-    mode,
-    ssr,
-    isWorker: false,
-    mainConfig: null,
-    isProduction,
-    plugins: userPlugins,
-    server,
-    build: resolvedBuildOptions,
-    preview: resolvePreviewOptions(config.preview, server),
+    inlineConfig, // 定义配置文件的解析规则 see: https://cn.vitejs.dev/guide/api-javascript.html#inlineconfig
+    root: resolvedRoot, // 项目根节点地址
+    base: resolvedBase, // 基础url
+    resolve: resolveOptions, // resolve配置对象 see: https://cn.vitejs.dev/config/shared-options.html#resolve-dedupe
+    publicDir: resolvedPublicDir, // 公共文件夹地址: 'xxx/xxx'
+    cacheDir, // 缓存vite的文件目录
+    command, // 指令
+    mode, // 模式
+    ssr, // ssr渲染的配置
+    isWorker: false, // 默认不是Worker
+    mainConfig: null, // 默认main
+    isProduction, // 是否生产环境
+    plugins: userPlugins, // 用户自定义的plugins
+    server, // server配置
+    build: resolvedBuildOptions, // build配置 see : https://cn.vitejs.dev/config/build-options.html
+    preview: resolvePreviewOptions(config.preview, server), // https://cn.vitejs.dev/config/preview-options.html#preview-host
+    // 环境配置文件信息
     env: {
       ...userEnv,
       BASE_URL,
@@ -663,12 +676,17 @@ export async function resolveConfig(
       DEV: !isProduction,
       PROD: isProduction
     },
+    // https://cn.vitejs.dev/config/shared-options.html#assetsinclude
     assetsInclude(file: string) {
       return DEFAULT_ASSETS_RE.test(file) || assetsFilter(file)
     },
+    // 记录
     logger,
+    // packageCache
     packageCache: new Map(),
+    // 内部解析器用于特殊场景，例如: 优化器和处理 css @imports
     createResolver,
+    // 优化配置
     optimizeDeps: {
       disabled: 'build',
       ...optimizeDeps,
@@ -677,8 +695,14 @@ export async function resolveConfig(
         ...optimizeDeps.esbuildOptions
       }
     },
+    // worker配置
     worker: resolvedWorkerOptions,
+    // 页面应用模式
+    // 'spa'：包含 SPA 回退中间件以及在预览中将 sirv 配置为 single: true
+    // 'mpa'：仅包含非 SPA HTML 中间件
+    // 'custom'：不包含 HTML 中间件
     appType: config.appType ?? (middlewareMode === 'ssr' ? 'custom' : 'spa'),
+    // 高级基础路径选项 see: https://cn.vitejs.dev/guide/build.html#advanced-base-options
     experimental: {
       importGlobRestoreExtension: false,
       hmrPartialAccept: false,
@@ -687,17 +711,19 @@ export async function resolveConfig(
     getSortedPlugins: undefined!,
     getSortedPluginHooks: undefined!
   }
+  // 合并下最终的配置、有可能存在用户自定义的配置
   const resolved: ResolvedConfig = {
     ...config,
     ...resolvedConfig
   }
-
+  // 把所有插件都推入插件队列里面去
   ;(resolved.plugins as Plugin[]) = await resolvePlugins(
     resolved,
     prePlugins,
     normalPlugins,
     postPlugins
   )
+  // 再次合并最终的配置
   Object.assign(resolved, createPluginHookUtils(resolved.plugins))
 
   const workerResolved: ResolvedConfig = {
@@ -706,18 +732,20 @@ export async function resolveConfig(
     isWorker: true,
     mainConfig: resolved
   }
+  // worker 插件
   resolvedConfig.worker.plugins = await resolvePlugins(
     workerResolved,
     workerPrePlugins,
     workerNormalPlugins,
     workerPostPlugins
   )
+  // 合并worker
   Object.assign(
     resolvedConfig.worker,
     createPluginHookUtils(resolvedConfig.worker.plugins)
   )
 
-  // call configResolved hooks
+  // 执行插件的configResolved钩子 、在这个钩子里面可以获取最终的配置
   await Promise.all([
     ...resolved
       .getSortedPluginHooks('configResolved')
@@ -727,8 +755,7 @@ export async function resolveConfig(
       .map((hook) => hook(workerResolved))
   ])
 
-  // validate config
-
+  // 验证配置
   if (middlewareMode === 'ssr') {
     logger.warn(
       colors.yellow(
@@ -745,7 +772,7 @@ export async function resolveConfig(
       )
     )
   }
-
+  // 删除缓存依赖
   if (
     config.server?.force &&
     !isBuild &&
@@ -780,8 +807,8 @@ export async function resolveConfig(
     )
   }
 
-  // Check if all assetFileNames have the same reference.
-  // If not, display a warn for user.
+  // 检查所有assetFileNames 是否具有相同的引用。
+  // 如果不是，则向用户显示警告。
   const outputOption = config.build?.rollupOptions?.output ?? []
   // Use isArray to narrow its type to array
   if (Array.isArray(outputOption)) {

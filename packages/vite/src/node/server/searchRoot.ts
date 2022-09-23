@@ -24,9 +24,11 @@ const ROOT_FILES = [
 // yarn: https://classic.yarnpkg.com/en/docs/workspaces/#toc-how-to-use-it
 function hasWorkspacePackageJSON(root: string): boolean {
   const path = join(root, 'package.json')
+  // 文件是否可读
   if (!isFileReadable(path)) {
     return false
   }
+  // 是否存在 workspaces
   const content = JSON.parse(fs.readFileSync(path, 'utf-8')) || {}
   return !!content.workspaces
 }
@@ -54,7 +56,7 @@ export function searchForPackageRoot(current: string, root = current): string {
 }
 
 /**
- * Search up for the nearest workspace root
+ * 搜索最近的工作区根、包含项目根节点文件是否可读、workspaces 字段、pnpm-workspace.yaml、lerna.json等等....
  */
 export function searchForWorkspaceRoot(
   current: string,

@@ -31,8 +31,11 @@ export async function resolvePlugins(
   normalPlugins: Plugin[],
   postPlugins: Plugin[]
 ): Promise<Plugin[]> {
+  // 是否运行build打包
   const isBuild = config.command === 'build'
+  // 是否开启watch
   const isWatch = isBuild && !!config.build.watch
+  // 把前置插件(pre)和后置(post)插件筛选出来、和vite内置的前后插件
   const buildPlugins = isBuild
     ? (await import('../build')).resolveBuildPlugins(config)
     : { pre: [], post: [] }
@@ -42,6 +45,7 @@ export async function resolvePlugins(
     isBuild ? metadataPlugin() : null,
     preAliasPlugin(config),
     aliasPlugin({ entries: config.resolve.alias }),
+    // 把用户自己的前置插件放进来
     ...prePlugins,
     config.build.polyfillModulePreload
       ? modulePreloadPolyfillPlugin(config)
@@ -97,9 +101,10 @@ export async function resolvePlugins(
     ...(isBuild
       ? []
       : [clientInjectionsPlugin(config), importAnalysisPlugin(config)])
+    // filter是为了排除掉false部分的[fn,0,false].filter(item => Boolean(item))
   ].filter(Boolean) as Plugin[]
 }
-
+//
 export function createPluginHookUtils(
   plugins: readonly Plugin[]
 ): PluginHookUtils {

@@ -705,6 +705,9 @@ function resolvedAllowDir(root: string, dir: string): string {
   return normalizePath(path.resolve(root, dir))
 }
 
+/* 
+  处理用户的server配置、主要涉及: 黑名单文件后缀列表、限制为工作区已外的文件获取、工作区的目录列表
+*/
 export function resolveServerOptions(
   root: string,
   raw: ServerOptions | undefined,
@@ -712,30 +715,33 @@ export function resolveServerOptions(
 ): ResolvedServerOptions {
   const server: ResolvedServerOptions = {
     preTransformRequests: true,
+    // 用户定义的serve配置
     ...(raw as ResolvedServerOptions),
     middlewareMode: !!raw?.middlewareMode
   }
+  // 限制哪些文件可以通过 /@fs/ 路径提供服务、当 server.fs.strict 设置为 true 时，访问 [这个目录列表外] 的文件将会返回 403 结果 ( 安全 )
   let allowDirs = server.fs?.allow
+  // 黑名单文件后缀、默认不支持fs读取
   const deny = server.fs?.deny || ['.env', '.env.*', '*.{crt,pem}']
-
+  // 用户不设置默认使用 vite 的文件获取规则 => 项目的root根节点、在package.json 中包含 workspaces 字段、pnpm-workspace.yaml、lerna.json
   if (!allowDirs) {
     allowDirs = [searchForWorkspaceRoot(root)]
   }
 
   allowDirs = allowDirs.map((i) => resolvedAllowDir(root, i))
 
-  // only push client dir when vite itself is outside-of-root
+  // 仅当 vite 本身位于根目录之外时才推送客户端目录
   const resolvedClientDir = resolvedAllowDir(root, CLIENT_DIR)
   if (!allowDirs.some((dir) => isParentDirectory(dir, resolvedClientDir))) {
     allowDirs.push(resolvedClientDir)
   }
-
+  // 聚合server.fs
   server.fs = {
-    strict: server.fs?.strict ?? true,
-    allow: allowDirs,
-    deny
+    strict: server.fs?.strict ?? true, // 限制为工作区 root 路径以外的文件的访问
+    allow: allowDirs, // 工作区的目录列表
+    deny // 黑名单文件后缀列表
   }
-
+  // 用于定义开发调试阶段生成资产的 origin。
   if (server.origin?.endsWith('/')) {
     server.origin = server.origin.slice(0, -1)
     logger.warn(
