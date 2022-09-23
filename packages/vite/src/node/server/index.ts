@@ -290,36 +290,39 @@ export interface ResolvedServerUrls {
   network: string[]
 }
 
-/*
-  创建服务
-*/
+// 创建服务
 export async function createServer(
   inlineConfig: InlineConfig = {}
 ): Promise<ViteDevServer> {
-  /* 合并配置代码 */
+  // 得到所有配置
   const config = await resolveConfig(inlineConfig, 'serve', 'development')
   const { root, server: serverConfig } = config
+  // 获取HTTPS配置
   const httpsOptions = await resolveHttpsConfig(
     config.server.https,
     config.cacheDir
   )
+  // 是否以中间件模式创建 Vite 服务器
   const { middlewareMode } = serverConfig
-
+  // 合并用户传入的自定义watch文件和目录
   const resolvedWatchOptions = resolveChokidarOptions({
     disableGlobbing: true,
-    ...serverConfig.watch
+    ...serverConfig.watch // 添加需要自定义watch的文件或目录
   })
-
+  // connect 是一个专门写中间件的库
   const middlewares = connect() as Connect.Server
+  // http server
   const httpServer = middlewareMode
     ? null
-    : await resolveHttpServer(serverConfig, middlewares, httpsOptions)
+    : // 创建http服务
+      await resolveHttpServer(serverConfig, middlewares, httpsOptions)
+  // 创建webscoket
   const ws = createWebSocketServer(httpServer, config, httpsOptions)
 
   if (httpServer) {
     setClientErrorHandler(httpServer, config.logger)
   }
-
+  /* chokidar: 监听文件变动的插件包 see: https://www.npmjs.com/package/chokidar */
   const watcher = chokidar.watch(
     path.resolve(root),
     resolvedWatchOptions
