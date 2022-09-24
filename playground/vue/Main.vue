@@ -1,6 +1,6 @@
 <template>
   <div class="comments"><!--hello--></div>
-  <h1>Vue SFCs</h1>
+  <h1>Vue SFCs2</h1>
   <pre>{{ time as string }}</pre>
   <div class="hmr-block">
     <Hmr />

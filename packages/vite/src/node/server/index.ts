@@ -316,7 +316,7 @@ export async function createServer(
     ? null
     : // 创建http服务
       await resolveHttpServer(serverConfig, middlewares, httpsOptions)
-  // 创建webscoket
+  // 创建ws服务
   const ws = createWebSocketServer(httpServer, config, httpsOptions)
 
   if (httpServer) {
@@ -327,12 +327,13 @@ export async function createServer(
     path.resolve(root),
     resolvedWatchOptions
   ) as FSWatcher
-
+  // 这里好像在收集启动依赖文件信息
   const moduleGraph: ModuleGraph = new ModuleGraph((url, ssr) =>
     container.resolveId(url, undefined, { ssr })
   )
-
+  // plugin集合
   const container = await createPluginContainer(config, moduleGraph, watcher)
+  // 关闭http服务的方法
   const closeHttpServer = createServerCloseFn(httpServer)
 
   let exitProcess: () => void
@@ -381,8 +382,10 @@ export async function createServer(
       return ssrRewriteStacktrace(stack, moduleGraph)
     },
     async listen(port?: number, isRestart?: boolean) {
+      // 启动服务
       await startServer(server, port, isRestart)
       if (httpServer) {
+        // 获取访问路径
         server.resolvedUrls = await resolveServerUrls(
           httpServer,
           config.server,
@@ -406,6 +409,7 @@ export async function createServer(
       ])
       server.resolvedUrls = null
     },
+    // 打印访问路径
     printUrls() {
       if (server.resolvedUrls) {
         printServerUrls(
@@ -421,6 +425,7 @@ export async function createServer(
         )
       }
     },
+    // 重启服务
     async restart(forceOptimize?: boolean) {
       if (!server._restartPromise) {
         server._forceOptimizeOnRestart = !!forceOptimize
@@ -438,9 +443,9 @@ export async function createServer(
     _forceOptimizeOnRestart: false,
     _pendingRequests: new Map()
   }
-
+  // 对用户的html做一些转换、目的是为了读取用户的模版html内容、然后插入vite内部的逻辑
   server.transformIndexHtml = createDevHtmlTransformFn(server)
-
+  // 是否以中间件模式创建 Vite 服务器
   if (!middlewareMode) {
     exitProcess = async () => {
       try {
@@ -463,9 +468,11 @@ export async function createServer(
     }
     return setPackageData(id, pkg)
   }
-
+  // 文件更新变动处理
   watcher.on('change', async (file) => {
+    // 是否存在这个文件路径
     file = normalizePath(file)
+    // 判断是否是package.json
     if (file.endsWith('/package.json')) {
       return invalidatePackageData(packageCache, file)
     }
@@ -473,8 +480,10 @@ export async function createServer(
     moduleGraph.onFileChange(file)
     if (serverConfig.hmr !== false) {
       try {
+        // 处理热更新
         await handleHMRUpdate(file, server)
       } catch (err) {
+        // 发送错误日志
         ws.send({
           type: 'error',
           err: prepareError(err)
@@ -482,14 +491,15 @@ export async function createServer(
       }
     }
   })
-
+  // 添加文件监听
   watcher.on('add', (file) => {
     handleFileAddUnlink(normalizePath(file), server)
   })
+  // 取消某个文件监听
   watcher.on('unlink', (file) => {
     handleFileAddUnlink(normalizePath(file), server)
   })
-
+  // 不是自定义vite服务
   if (!middlewareMode && httpServer) {
     httpServer.once('listening', () => {
       // update actual port since this may be different from initial value
@@ -497,13 +507,13 @@ export async function createServer(
     })
   }
 
-  // apply server configuration hooks from plugins
+  // 客户端通过插件和vite进行通信
   const postHooks: ((() => void) | void)[] = []
   for (const hook of config.getSortedPluginHooks('configureServer')) {
     postHooks.push(await hook(server))
   }
 
-  // Internal middlewares ------------------------------------------------------
+  // 内部中间件 ------------------------------------------------------
 
   // request timer
   if (process.env.DEBUG) {
@@ -552,9 +562,9 @@ export async function createServer(
     middlewares.use(spaFallbackMiddleware(root))
   }
 
-  // run post config hooks
-  // This is applied before the html middleware so that user middleware can
-  // serve custom content instead of index.html.
+  // 运行配置后挂钩
+  // 这在 html 中间件之前应用，以便用户中间件可以
+  // 提供自定义内容而不是 index.html。
   postHooks.forEach((fn) => fn && fn())
 
   if (config.appType === 'spa' || config.appType === 'mpa') {
@@ -592,7 +602,7 @@ export async function createServer(
     })()
     return initingServer
   }
-
+  // 不是自定义vite服务
   if (!middlewareMode && httpServer) {
     // overwrite listen to init optimizer before server start
     const listen = httpServer.listen.bind(httpServer)

@@ -43,17 +43,23 @@ export async function handleHMRUpdate(
   file: string,
   server: ViteDevServer
 ): Promise<void> {
+  // 取出对应的服务和配置
   const { ws, config, moduleGraph } = server
+  // 短的文件名称
   const shortFile = getShortName(file, config.root)
+  // 获取文件名称 /xx/xxx/main.vue => main.vue
   const fileName = path.basename(file)
-
+  // 判断是否是配置文件变动了
   const isConfig = file === config.configFile
+  // 是否是依赖文件变动了
   const isConfigDependency = config.configFileDependencies.some(
     (name) => file === name
   )
+  // 是不是环境变量文件变动了
   const isEnv =
     config.inlineConfig.envFile !== false &&
     (fileName === '.env' || fileName.startsWith('.env.'))
+  // 如果是配置文件 | 或者依赖文件 | 环境变量文件 : 就需要重启服务
   if (isConfig || isConfigDependency || isEnv) {
     // auto restart server
     debugHmr(`[config change] ${colors.dim(shortFile)}`)
@@ -73,7 +79,7 @@ export async function handleHMRUpdate(
 
   debugHmr(`[file change] ${colors.dim(shortFile)}`)
 
-  // (dev only) the client itself cannot be hot updated.
+  // （仅限开发人员）客户端本身不能热更新。
   if (file.startsWith(normalizedClientDir)) {
     ws.send({
       type: 'full-reload',
@@ -81,7 +87,7 @@ export async function handleHMRUpdate(
     })
     return
   }
-
+  // 在模块队列里面找到当前变动的文件信息
   const mods = moduleGraph.getModulesByFile(file)
 
   // check if any plugin wants to perform custom HMR handling
@@ -93,14 +99,14 @@ export async function handleHMRUpdate(
     read: () => readModifiedFile(file),
     server
   }
-
+  // 处理 vite插件的热更新钩子(handleHotUpdate) see : https://cn.vitejs.dev/guide/api-plugin.html#vite-specific-hooks
   for (const hook of config.getSortedPluginHooks('handleHotUpdate')) {
     const filteredModules = await hook(hmrContext)
     if (filteredModules) {
       hmrContext.modules = filteredModules
     }
   }
-
+  // 如果文件依赖模块没有一个
   if (!hmrContext.modules.length) {
     // html file cannot be hot updated
     if (file.endsWith('.html')) {
@@ -120,7 +126,7 @@ export async function handleHMRUpdate(
     }
     return
   }
-
+  // 更新模块内容
   updateModules(shortFile, hmrContext.modules, timestamp, server)
 }
 
@@ -132,8 +138,8 @@ export function updateModules(
 ): void {
   const updates: Update[] = []
   const invalidatedModules = new Set<ModuleNode>()
+  // 判断是否需要重新加载
   let needFullReload = false
-
   for (const mod of modules) {
     invalidate(mod, timestamp, invalidatedModules)
     if (needFullReload) {
@@ -144,12 +150,14 @@ export function updateModules(
       boundary: ModuleNode
       acceptedVia: ModuleNode
     }>()
+    // 传播更新? 可能这个文件属于子文件、需要通知父文件组件?
     const hasDeadEnd = propagateUpdate(mod, boundaries)
+    // 需要重新加载标记
     if (hasDeadEnd) {
       needFullReload = true
       continue
     }
-
+    // 更新配置表
     updates.push(
       ...[...boundaries].map(({ boundary, acceptedVia }) => ({
         type: `${boundary.type}-update` as const,
@@ -163,7 +171,7 @@ export function updateModules(
       }))
     )
   }
-
+  // 重新更新通知
   if (needFullReload) {
     config.logger.info(colors.green(`page reload `) + colors.dim(file), {
       clear: true,
@@ -174,7 +182,7 @@ export function updateModules(
     })
     return
   }
-
+  // 没有更新内容
   if (updates.length === 0) {
     debugHmr(colors.yellow(`no update happened `) + colors.dim(file))
     return
@@ -186,6 +194,7 @@ export function updateModules(
       .join('\n'),
     { clear: true, timestamp: true }
   )
+  // 发送文件更新动作
   ws.send({
     type: 'update',
     updates
