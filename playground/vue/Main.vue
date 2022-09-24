@@ -1,8 +1,9 @@
 <template>
   <div class="comments"><!--hello--></div>
   <h1>Vue SFCs2</h1>
-  <pre>{{ time as string }}</pre>
-  <div class="hmr-block">
+  {{ time as string }}
+  <!-- <pre>{{ time as string }}</pre> -->
+  <!-- <div class="hmr-block">
     <Hmr />
   </div>
   <Syntax />
@@ -20,26 +21,30 @@
     <AsyncComponent />
   </Suspense>
   <ReactivityTransform :foo="time" />
-  <SetupImportTemplate />
-  <WorkerTest />
+  <SetupImportTemplate /> -->
+  <!-- <WorkerTest /> -->
 </template>
 
 <script setup lang="ts">
-import Hmr from './Hmr.vue'
-import Syntax from './Syntax.vue'
-import PreProcessors from './PreProcessors.vue'
-import CssModules from './CssModules.vue'
-import Assets from './Assets.vue'
-import CustomBlock from './CustomBlock.vue'
-import SrcImport from './src-import/SrcImport.vue'
-import Slotted from './Slotted.vue'
-import ScanDep from './ScanDep.vue'
-import TsImport from './TsImport.vue'
-import AsyncComponent from './AsyncComponent.vue'
-import ReactivityTransform from './ReactivityTransform.vue'
-import SetupImportTemplate from './setup-import-template/SetupImportTemplate.vue'
-import WorkerTest from './worker.vue'
-import { ref } from 'vue'
+// import Hmr from './Hmr.vue'
+// import Syntax from './Syntax.vue'
+// import PreProcessors from './PreProcessors.vue'
+// import CssModules from './CssModules.vue'
+// import Assets from './Assets.vue'
+// import CustomBlock from './CustomBlock.vue'
+// import SrcImport from './src-import/SrcImport.vue'
+// import Slotted from './Slotted.vue'
+// import ScanDep from './ScanDep.vue'
+// import TsImport from './TsImport.vue'
+// import AsyncComponent from './AsyncComponent.vue'
+// import ReactivityTransform from './ReactivityTransform.vue'
+// import SetupImportTemplate from './setup-import-template/SetupImportTemplate.vue'
+// import WorkerTest from './worker.vue'
+import { ref, getCurrentInstance } from 'vue'
+
+const res = getCurrentInstance()
+
+console.log(res)
 
 const time = ref('loading...')
 

@@ -66,8 +66,9 @@ export function transformRequest(
   // We save the timestamp when we start processing and compare it with the
   // last time this module is invalidated
   const timestamp = Date.now()
-
+  // 以文件请求作为缓存key
   const pending = server._pendingRequests.get(cacheKey)
+  // 有缓存优先使用缓存
   if (pending) {
     return server.moduleGraph
       .getModuleByUrl(removeTimestampQuery(url), options.ssr)
@@ -119,9 +120,10 @@ async function doTransform(
   url = removeTimestampQuery(url)
 
   const { config, pluginContainer } = server
+  // 处理请求路径
   const prettyUrl = isDebug ? prettifyUrl(url, config.root) : ''
   const ssr = !!options.ssr
-
+  // 获取请求路径模块
   const module = await server.moduleGraph.getModuleByUrl(url, ssr)
 
   // check if we have a fresh cache
@@ -138,10 +140,10 @@ async function doTransform(
     return cached
   }
 
-  // resolve
+  // 执行插件的resolveId钩子
   const id =
     (await pluginContainer.resolveId(url, undefined, { ssr }))?.id || url
-
+  // 文件请求加载和转换处理
   const result = loadAndTransform(id, url, server, options, timestamp)
 
   getDepsOptimizer(config, ssr)?.delayDepsOptimizerUntil(id, () => result)

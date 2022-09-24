@@ -51,12 +51,14 @@ export function transformMiddleware(
 
   // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
   return async function viteTransformMiddleware(req, res, next) {
+    // 只处理get请求
     if (req.method !== 'GET' || knownIgnoreList.has(req.url!)) {
       return next()
     }
 
     let url: string
     try {
+      // 把格式化的url重新格式化回来、目的为了转换参数
       url = decodeURI(removeTimestampQuery(req.url!)).replace(
         NULL_BYTE_PLACEHOLDER,
         '\0'
@@ -181,15 +183,16 @@ export function transformMiddleware(
           return res.end()
         }
 
-        // resolve, load and transform using the plugin container
+        // 使用插件容器解析、加载和转换( 核心 )、
         const result = await transformRequest(url, server, {
-          html: req.headers.accept?.includes('text/html')
+          html: req.headers.accept?.includes('text/html') // 判断当前是否请求的是html
         })
         if (result) {
           const depsOptimizer = getDepsOptimizer(server.config, false) // non-ssr
           const type = isDirectCSSRequest(url) ? 'css' : 'js'
           const isDep =
             DEP_VERSION_RE.test(url) || depsOptimizer?.isOptimizedDepUrl(url)
+          // 响应请求结果
           return send(req, res, result.code, type, {
             etag: result.etag,
             // allow browser to cache npm deps!

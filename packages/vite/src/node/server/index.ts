@@ -538,12 +538,12 @@ export async function createServer(
     middlewares.use(baseMiddleware(server))
   }
 
-  // open in editor support
+  // 编辑器打开组件文件服务
   middlewares.use('/__open-in-editor', launchEditorMiddleware())
 
-  // serve static files under /public
-  // this applies before the transform middleware so that these files are served
-  // as-is without transforms.
+  // 在 /public 下提供静态文件
+  // 这适用于转换中间件之前，以便提供这些文件
+  // 原样没有转换。
   if (config.publicDir) {
     middlewares.use(
       servePublicMiddleware(config.publicDir, config.server.headers)
