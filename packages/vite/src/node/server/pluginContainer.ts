@@ -152,6 +152,7 @@ export async function createPluginContainer(
     root,
     build: { rollupOptions }
   } = config
+  // 解构hook
   const { getSortedPluginHooks, getSortedPlugins } =
     createPluginHookUtils(plugins)
 
@@ -177,10 +178,10 @@ export async function createPluginContainer(
 
   const watchFiles = new Set<string>()
 
-  // TODO: use import()
+  // TODO: 使用import方式加载资源
   const _require = createRequire(import.meta.url)
 
-  // get rollup version
+  // 获取rollup版本
   const rollupPkgPath = resolve(
     _require.resolve('rollup'),
     '../../package.json'
@@ -192,7 +193,7 @@ export async function createPluginContainer(
       watchMode: true
     }
   }
-
+  // 警告不兼容的方法
   function warnIncompatibleMethod(method: string, plugin: string) {
     logger.warn(
       colors.cyan(`[plugin:${plugin}] `) +
@@ -226,8 +227,8 @@ export async function createPluginContainer(
     await Promise.all(parallelPromises)
   }
 
-  // throw when an unsupported ModuleInfo property is accessed,
-  // so that incompatible plugins fail in a non-cryptic way.
+  // throw when an unsupported ModuleInfo property is accessed
+  // so that incompatible plugins fail in a non-cryptic way
   const ModuleInfoProxy: ProxyHandler<ModuleInfo> = {
     get(info: any, key: string) {
       if (key in info) {

@@ -203,11 +203,15 @@ export async function transformMain(
   if (!attachedProps.length) {
     output.push(`export default _sfc_main`)
   } else {
+    const props = `export default /*#__PURE__*/_export_sfc(_sfc_main, [${attachedProps
+      .map(([key, val]) => `['${key}',${val}]`)
+      .join(',')}])`
     output.push(
       `import _export_sfc from '${EXPORT_HELPER_ID}'`,
-      `export default /*#__PURE__*/_export_sfc(_sfc_main, [${attachedProps
-        .map(([key, val]) => `['${key}',${val}]`)
-        .join(',')}])`
+      props
+      // `export default /*#__PURE__*/_export_sfc(_sfc_main, [${attachedProps
+      //   .map(([key, val]) => `['${key}',${val}]`)
+      //   .join(',')}])`
     )
   }
 

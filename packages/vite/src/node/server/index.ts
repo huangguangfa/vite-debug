@@ -331,7 +331,7 @@ export async function createServer(
   const moduleGraph: ModuleGraph = new ModuleGraph((url, ssr) =>
     container.resolveId(url, undefined, { ssr })
   )
-  // plugin集合
+  // 创建插件容器、 用于在构建的各个阶段调用插件的钩子
   const container = await createPluginContainer(config, moduleGraph, watcher)
   // 关闭http服务的方法
   const closeHttpServer = createServerCloseFn(httpServer)
@@ -543,7 +543,7 @@ export async function createServer(
 
   // 在 /public 下提供静态文件
   // 这适用于转换中间件之前，以便提供这些文件
-  // 原样没有转换。
+  // 原样没有转换
   if (config.publicDir) {
     middlewares.use(
       servePublicMiddleware(config.publicDir, config.server.headers)
@@ -564,7 +564,7 @@ export async function createServer(
 
   // 运行配置后挂钩
   // 这在 html 中间件之前应用，以便用户中间件可以
-  // 提供自定义内容而不是 index.html。
+  // 提供自定义内容而不是 index.html
   postHooks.forEach((fn) => fn && fn())
 
   if (config.appType === 'spa' || config.appType === 'mpa') {
@@ -651,7 +651,7 @@ async function startServer(
   const profileSession = global.__vite_profile_session
   if (profileSession) {
     profileSession.post('Profiler.stop', (err: any, { profile }: any) => {
-      // Write profile to disk, upload, etc.
+      // Write profile to disk, upload, etc
       if (!err) {
         const outPath = path.resolve('./vite-profile.cpuprofile')
         fs.writeFileSync(outPath, JSON.stringify(profile))
@@ -718,7 +718,7 @@ function resolvedAllowDir(root: string, dir: string): string {
   return normalizePath(path.resolve(root, dir))
 }
 
-/* 
+/*
   处理用户的server配置、主要涉及: 黑名单文件后缀列表、限制为工作区已外的文件获取、工作区的目录列表
 */
 export function resolveServerOptions(

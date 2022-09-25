@@ -140,7 +140,7 @@ async function doTransform(
     return cached
   }
 
-  // 执行插件的resolveId钩子
+  // 获取文件id也就是完整路径
   const id =
     (await pluginContainer.resolveId(url, undefined, { ssr }))?.id || url
   // 文件请求加载和转换处理
@@ -162,12 +162,9 @@ async function loadAndTransform(
   const { root, logger } = config
   const prettyUrl = isDebug ? prettifyUrl(url, config.root) : ''
   const ssr = !!options.ssr
-
   const file = cleanUrl(id)
-
   let code: string | null = null
   let map: SourceDescription['map'] = null
-
   // load
   const loadStart = isDebug ? performance.now() : 0
   const loadResult = await pluginContainer.load(id, { ssr })
@@ -194,6 +191,7 @@ async function loadAndTransform(
     }
     if (code) {
       try {
+        // 生成source-map
         map = (
           convertSourceMap.fromSource(code) ||
           convertSourceMap.fromMapFileSource(code, path.dirname(file))
@@ -232,6 +230,7 @@ async function loadAndTransform(
 
   // transform
   const transformStart = isDebug ? performance.now() : 0
+  // 执行插件里的transform方法
   const transformResult = await pluginContainer.transform(code, id, {
     inMap: map,
     ssr

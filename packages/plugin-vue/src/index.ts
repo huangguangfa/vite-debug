@@ -210,6 +210,7 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
       if (query.raw) {
         return
       }
+      // 不是黑名单 与 不是vue文件的请求
       if (!filter(filename) && !query.vue) {
         if (
           !query.vue &&
@@ -223,9 +224,9 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
         }
         return
       }
-
+      // 不是vue文件请求
       if (!query.vue) {
-        // main request
+        // main根节点请求
         return transformMain(
           code,
           filename,

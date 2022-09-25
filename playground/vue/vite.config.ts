@@ -9,6 +9,7 @@ export default defineConfig({
       '@': __dirname
     }
   },
+
   plugins: [
     vuePlugin({
       reactivityTransform: true
