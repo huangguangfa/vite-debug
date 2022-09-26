@@ -110,6 +110,8 @@ export async function transformMain(
       JSON.stringify(isProduction ? path.basename(filename) : filename)
     ])
   }
+  // 测试手动添加进去
+  attachedProps.push([`__test111`, '111111'])
 
   // HMR
   if (
@@ -203,15 +205,15 @@ export async function transformMain(
   if (!attachedProps.length) {
     output.push(`export default _sfc_main`)
   } else {
-    const props = `export default /*#__PURE__*/_export_sfc(_sfc_main, [${attachedProps
-      .map(([key, val]) => `['${key}',${val}]`)
-      .join(',')}])`
+    // const props = `export default /*#__PURE__*/_export_sfc(_sfc_main, [${attachedProps
+    //   .map(([key, val]) => `['${key}',${val}]`)
+    //   .join(',')}])`
     output.push(
       `import _export_sfc from '${EXPORT_HELPER_ID}'`,
-      props
-      // `export default /*#__PURE__*/_export_sfc(_sfc_main, [${attachedProps
-      //   .map(([key, val]) => `['${key}',${val}]`)
-      //   .join(',')}])`
+      // props
+      `export default /*#__PURE__*/_export_sfc(_sfc_main, [${attachedProps
+        .map(([key, val]) => `['${key}',${val}]`)
+        .join(',')}])`
     )
   }
 
