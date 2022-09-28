@@ -7,11 +7,13 @@ import { TraceMap, eachMapping } from '@jridgewell/trace-mapping'
 import type { EncodedSourceMap as GenEncodedSourceMap } from '@jridgewell/gen-mapping'
 import { addMapping, fromMap, toEncodedMap } from '@jridgewell/gen-mapping'
 import { normalizePath, transformWithEsbuild } from 'vite'
+
 import {
   createDescriptor,
   getPrevDescriptor,
   setSrcDescriptor
 } from './utils/descriptorCache'
+
 import { isUseInlineTemplate, resolveScript } from './script'
 import { transformTemplateInMain } from './template'
 import { isEqualBlock, isOnlyTemplateChanged } from './handleHotUpdate'
@@ -32,6 +34,7 @@ export async function transformMain(
 
   // prev descriptor is only set and used for hmr
   const prevDescriptor = getPrevDescriptor(filename)
+  // 做vue文件内容的拆分、把script、style、template拆出来
   const { descriptor, errors } = createDescriptor(filename, code, options)
 
   if (errors.length) {
@@ -43,9 +46,10 @@ export async function transformMain(
 
   // feature information
   const attachedProps: [string, string][] = []
+  // 对scoped做升序处理
   const hasScoped = descriptor.styles.some((s) => s.scoped)
 
-  // script
+  // script处理
   const { code: scriptCode, map: scriptMap } = await genScriptCode(
     descriptor,
     options,
@@ -53,7 +57,7 @@ export async function transformMain(
     ssr
   )
 
-  // template
+  // template: 这里把template模版编译成js代码
   const hasTemplateImport =
     descriptor.template && !isUseInlineTemplate(descriptor, !devServer)
 
@@ -305,11 +309,10 @@ async function genScriptCode(
 }> {
   let scriptCode = `const _sfc_main = {}`
   let map: RawSourceMap | undefined
-
+  // 对script进行抽离组合、变成一个script配置对象
   const script = resolveScript(descriptor, options, ssr)
   if (script) {
-    // If the script is js/ts and has no external src, it can be directly placed
-    // in the main module.
+    // 如果脚本是js/ts，没有外部src，可以直接放在主模块中。
     if (
       (!script.lang || (script.lang === 'ts' && options.devServer)) &&
       !script.src
@@ -321,6 +324,7 @@ async function genScriptCode(
             ? (['typescript'] as const)
             : (['typescript', 'decorators-legacy'] as const)
           : []
+      // 重写scriptCode内容
       scriptCode = options.compiler.rewriteDefault(
         script.content,
         '_sfc_main',

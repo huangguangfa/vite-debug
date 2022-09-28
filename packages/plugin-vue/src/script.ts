@@ -47,7 +47,7 @@ export function resolveScript(
   }
 
   let resolved: SFCScriptBlock | null = null
-
+  // 编译script内容、得到实际的
   resolved = options.compiler.compileScript(descriptor, {
     ...options.script,
     id: descriptor.id,
