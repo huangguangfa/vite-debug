@@ -4,7 +4,7 @@
 ## transformMain
 ```js
 /* 
-    transformMain方法主要对vue文件做编译、
+    transformMain方法主要对vue文件做编译
     包含template模版 => js
     setup script => js => defineComponent
     style处理: 重写路径去重新加载syle

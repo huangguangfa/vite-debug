@@ -533,6 +533,7 @@ export async function createPluginContainer(
   let closed = false
 
   const container: PluginContainer = {
+    //
     options: await (async () => {
       let options = rollupOptions
       for (const optionsHook of getSortedPluginHooks('options')) {
@@ -549,9 +550,9 @@ export async function createPluginContainer(
         ...options
       }
     })(),
-
+    // 获取模块的方法
     getModuleInfo,
-
+    // build开始的hook
     async buildStart() {
       await hookParallel(
         'buildStart',
@@ -559,7 +560,7 @@ export async function createPluginContainer(
         () => [container.options as NormalizedInputOptions]
       )
     },
-
+    //
     async resolveId(rawId, importer = join(root, 'index.html'), options) {
       const skip = options?.skip
       const ssr = options?.ssr
