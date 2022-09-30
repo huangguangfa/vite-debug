@@ -1,6 +1,15 @@
 import { defineConfig, splitVendorChunkPlugin } from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import { vueI18nPlugin } from './CustomBlockPlugin'
+function myPlugin() {
+  return {
+    name: 'transform-file',
+
+    transform(src, id) {
+      console.log(src, id)
+    }
+  }
+}
 export default defineConfig({
   resolve: {
     alias: {

@@ -133,6 +133,7 @@ export async function transformMain(
     if (prevDescriptor && isOnlyTemplateChanged(prevDescriptor, descriptor)) {
       output.push(`export const _rerender_only = true`)
     }
+    // 热更新
     output.push(
       `import.meta.hot.accept(mod => {`,
       `  if (!mod) return`,
@@ -209,9 +210,6 @@ export async function transformMain(
   if (!attachedProps.length) {
     output.push(`export default _sfc_main`)
   } else {
-    // const props = `export default /*#__PURE__*/_export_sfc(_sfc_main, [${attachedProps
-    //   .map(([key, val]) => `['${key}',${val}]`)
-    //   .join(',')}])`
     output.push(
       `import _export_sfc from '${EXPORT_HELPER_ID}'`,
       // props
@@ -260,7 +258,7 @@ async function genTemplateCode(
   const template = descriptor.template!
   const hasScoped = descriptor.styles.some((style) => style.scoped)
 
-  // If the template is not using pre-processor AND is not using external src,
+  // If the template is not using pre-processor AND is not using external src
   // compile and inline it directly in the main module. When served in vite this
   // saves an extra request per SFC which can improve load performance.
   if (!template.lang && !template.src) {
@@ -312,7 +310,7 @@ async function genScriptCode(
   // 对script进行抽离组合、变成一个script配置对象
   const script = resolveScript(descriptor, options, ssr)
   if (script) {
-    // 如果脚本是js/ts，没有外部src，可以直接放在主模块中。
+    // 如果脚本是js/ts，没有外部src，可以直接放在主模块中
     if (
       (!script.lang || (script.lang === 'ts' && options.devServer)) &&
       !script.src
@@ -324,7 +322,7 @@ async function genScriptCode(
             ? (['typescript'] as const)
             : (['typescript', 'decorators-legacy'] as const)
           : []
-      // 重写scriptCode内容
+      // 重写scriptCode内容、目的是为了把export default 变成变量形式_sfc_main
       scriptCode = options.compiler.rewriteDefault(
         script.content,
         '_sfc_main',
