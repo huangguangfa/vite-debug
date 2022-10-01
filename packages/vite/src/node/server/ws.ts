@@ -84,18 +84,22 @@ export function createWebSocketServer(
 ): WebSocketServer {
   let wss: WebSocketServerRaw
   let httpsServer: Server | undefined = undefined
-  // 热更新配置、判断是否是一个对象
+  // 热更新配置、判断是否是一个对象 https://cn.vitejs.dev/config/server-options.html#server-hmr
   const hmr = isObject(config.server.hmr) && config.server.hmr
+  // 获取用户的websocket（默认都是使用vite自己的）
   const hmrServer = hmr && hmr.server
+  // 自定义websocket端口
   const hmrPort = hmr && hmr.port
   // TODO: the main server port may not have been chosen yet as it may use the next available
   const portsAreCompatible = !hmrPort || hmrPort === config.server.port
   // 如果不定制 hmr.server 使用同一个httpServe服务(大部分是不会定制的)
   const wsServer = hmrServer || (portsAreCompatible && server)
+  // 自定义连接池
   const customListeners = new Map<string, Set<WebSocketCustomListener<any>>>()
+  // 客户连接池
   const clientsMap = new WeakMap<WebSocketRaw, WebSocketClient>()
-
   if (wsServer) {
+    // 创建websocket服务
     wss = new WebSocketServerRaw({ noServer: true })
     // 客户端使用http连接socket触发、换发起协议升级请求、给http服务端发送升级成websocket请求
     wsServer.on('upgrade', (req, socket, head) => {
@@ -103,6 +107,7 @@ export function createWebSocketServer(
       if (req.headers['sec-websocket-protocol'] === HMR_HEADER) {
         // 把http服务升级为ws
         wss.handleUpgrade(req, socket as Socket, head, (ws) => {
+          // 升级成功、出发连接成功事件
           wss.emit('connection', ws, req)
         })
       }
@@ -151,13 +156,16 @@ export function createWebSocketServer(
       try {
         parsed = JSON.parse(String(raw))
       } catch {}
+      // 不是自定义类型不做处理
       if (!parsed || parsed.type !== 'custom' || !parsed.event) return
+      // 获取服务端已经监听的自定义ws事件
       const listeners = customListeners.get(parsed.event)
       if (!listeners?.size) return
+      // 获取当前连接客户端
       const client = getSocketClient(socket)
       listeners.forEach((listener) => listener(parsed.data, client))
     })
-    // 发送给客户端的消息
+    // 当客户端连接成功后、服务端给客户端发送一个type=connected的消息
     socket.send(JSON.stringify({ type: 'connected' }))
     if (bufferedError) {
       socket.send(JSON.stringify(bufferedError))
@@ -208,8 +216,9 @@ export function createWebSocketServer(
   // If we have no open clients, buffer the error and send it to the next
   // connected client.
   let bufferedError: ErrorPayload | null = null
-
+  // 采用闭包的方式保存起ws服务
   return {
+    // 监听事件
     on: ((event: string, fn: () => void) => {
       if (wsServerEvents.includes(event)) wss.on(event, fn)
       else {
@@ -219,6 +228,7 @@ export function createWebSocketServer(
         customListeners.get(event)!.add(fn)
       }
     }) as WebSocketServer['on'],
+    // 解除事件的监听
     off: ((event: string, fn: () => void) => {
       if (wsServerEvents.includes(event)) {
         wss.off(event, fn)
@@ -226,10 +236,11 @@ export function createWebSocketServer(
         customListeners.get(event)?.delete(fn)
       }
     }) as WebSocketServer['off'],
-
+    // 返回当前连接的客户列表
     get clients() {
       return new Set(Array.from(wss.clients).map(getSocketClient))
     },
+    // 发送消息的封装
     send(...args: any[]) {
       let payload: HMRPayload
       if (typeof args[0] === 'string') {
@@ -255,7 +266,7 @@ export function createWebSocketServer(
         }
       })
     },
-
+    // 关闭连接
     close() {
       return new Promise((resolve, reject) => {
         wss.clients.forEach((client) => {

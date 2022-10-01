@@ -95,7 +95,7 @@ export async function resolveHttpServer(
   app: Connect.Server,
   httpsOptions?: HttpsServerOptions
 ): Promise<HttpServer> {
-  // 如果没有https的话直接返回createServer
+  // 如果没有https的配置的话直接返回node http服务
   if (!httpsOptions) {
     const { createServer } = await import('node:http')
     return createServer(app)

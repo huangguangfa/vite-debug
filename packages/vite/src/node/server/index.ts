@@ -302,7 +302,7 @@ export async function createServer(
     config.server.https,
     config.cacheDir
   )
-  // 用户以中间件模式创建 Vite 服务器
+  // 用户以中间件模式创建 Vite 服务器 https://cn.vitejs.dev/config/server-options.html#server-middlewaremode
   const { middlewareMode } = serverConfig
   // 合并用户传入的自定义watch文件和目录
   const resolvedWatchOptions = resolveChokidarOptions({
