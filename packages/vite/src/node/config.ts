@@ -355,29 +355,27 @@ export type ResolveFn = (
   ssr?: boolean
 ) => Promise<string | undefined>
 
-/* 
-  导出vite所有的配置
-*/
+/* 导出vite所有的配置 */
 export async function resolveConfig(
   inlineConfig: InlineConfig,
   command: 'build' | 'serve',
   defaultMode = 'development'
 ): Promise<ResolvedConfig> {
+  // 获取基础配置对象
   let config = inlineConfig
   let configFileDependencies: string[] = []
+  // 当前运行模式设置
   let mode = inlineConfig.mode || defaultMode
 
-  // some dependencies e.g. @vue/compiler-* relies on NODE_ENV for getting
-  // production-specific behavior, so set it here even though we haven't
-  // resolve the final mode yet
+  // 如果是生产环境我们需要设置下process.env.NODE_ENV、怕其他有依赖于process
   if (mode === 'production') {
     process.env.NODE_ENV = 'production'
   }
-  // production env would not work in serve, fallback to development
+  // 开发环境设置
   if (command === 'serve' && process.env.NODE_ENV === 'production') {
     process.env.NODE_ENV = 'development'
   }
-
+  // 保存当前运行的环境配置信息
   const configEnv = {
     mode,
     command,
@@ -387,15 +385,16 @@ export async function resolveConfig(
   let { configFile } = config
   // 可能存在一定知道没有配置文件的情况 configFile === false
   if (configFile !== false) {
-    // 加载本地根节点的vite.cofnig.ts文件内容
+    // 加载本地根节点的vite.cofnig.xxx文件内容
     const loadResult = await loadConfigFromFile(
       configEnv,
       configFile,
       config.root,
       config.logLevel
     )
+    // 有vite配置文件结果
     if (loadResult) {
-      // 合并配置、用户可能会在指令里面添加一些配置 --xxx系列 、指令的配置会覆盖掉配置文件的规则
+      // 合并配置、用户可能会在指令里面添加一些配置 --xxx系列 、指令的配置权重会大于配置文件的规则
       config = mergeConfig(loadResult.config, config)
       // 配置文件地址
       configFile = loadResult.path
@@ -410,7 +409,7 @@ export async function resolveConfig(
     customLogger: config.customLogger
   })
 
-  // user config may provide an alternative mode. But --mode has a higher priority
+  // 优先使用 --mode
   mode = inlineConfig.mode || config.mode || mode
   configEnv.mode = mode
 
@@ -984,9 +983,7 @@ export async function loadConfigFromFile(
     throw e
   }
 }
-/*
-  通过esbuild构建出vite.config.xxx的产物
-*/
+/*通过esbuild构建出vite.config.xxx的产物*/
 async function bundleConfigFile(
   fileName: string,
   isESM: boolean
@@ -1101,7 +1098,7 @@ async function loadConfigFromBundledFile(
     const fileUrl = `${pathToFileURL(fileBase)}.mjs`
     fs.writeFileSync(fileNameTmp, bundledCode)
     try {
-      // 直接通过import(filePath)的方式返回出去
+      // 直接通过import(filePath)的方式把临时地址的js导出的内容返回出去
       return (await dynamicImport(fileUrl)).default
     } finally {
       try {

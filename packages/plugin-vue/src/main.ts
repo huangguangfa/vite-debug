@@ -136,6 +136,7 @@ export async function transformMain(
     // 热更新
     output.push(
       `import.meta.hot.accept(mod => {`,
+      `console.log('hmr有更新')`,
       `  if (!mod) return`,
       `  const { default: updated, _rerender_only } = mod`,
       `  if (_rerender_only) {`,

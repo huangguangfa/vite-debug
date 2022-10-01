@@ -11,7 +11,7 @@ import { ref, getCurrentInstance } from 'vue'
 
 const res = getCurrentInstance()
 
-console.log(res)
+console.log(111, res)
 
 const time = ref('loading...')
 
