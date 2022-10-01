@@ -316,9 +316,9 @@ export async function createServer(
     ? null
     : // 创建http服务
       await resolveHttpServer(serverConfig, middlewares, httpsOptions)
-  // 创建ws服务
+  // 创建ws配置（包含服务连接处理）
   const ws = createWebSocketServer(httpServer, config, httpsOptions)
-
+  // 连接客户端请求错误处理
   if (httpServer) {
     setClientErrorHandler(httpServer, config.logger)
   }

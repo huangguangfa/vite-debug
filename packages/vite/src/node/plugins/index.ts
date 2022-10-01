@@ -108,7 +108,7 @@ export async function resolvePlugins(
 export function createPluginHookUtils(
   plugins: readonly Plugin[]
 ): PluginHookUtils {
-  // sort plugins per hook
+  // 对插件做排序 前置 正常 后置 还做了缓存处理
   const sortedPluginsCache = new Map<keyof Plugin, Plugin[]>()
   function getSortedPlugins(hookName: keyof Plugin): Plugin[] {
     if (sortedPluginsCache.has(hookName))
@@ -117,6 +117,7 @@ export function createPluginHookUtils(
     sortedPluginsCache.set(hookName, sorted)
     return sorted
   }
+  // 获取某个hook的所有插件回调
   function getSortedPluginHooks<K extends keyof Plugin>(
     hookName: K
   ): NonNullable<HookHandler<Plugin[K]>>[] {

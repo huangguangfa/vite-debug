@@ -152,7 +152,7 @@ export async function createPluginContainer(
     root,
     build: { rollupOptions }
   } = config
-  // 解构hook
+  // 创建获取plugin里面某个方法
   const { getSortedPluginHooks, getSortedPlugins } =
     createPluginHookUtils(plugins)
 
@@ -178,7 +178,7 @@ export async function createPluginContainer(
 
   const watchFiles = new Set<string>()
 
-  // TODO: 使用import方式加载资源
+  // TODO: 使用require方式加载资源
   const _require = createRequire(import.meta.url)
 
   // 获取rollup版本
@@ -205,7 +205,7 @@ export async function createPluginContainer(
     )
   }
 
-  // parallel, ignores returns
+  // 执行plugins里面某个hook方法、不做返回动作
   async function hookParallel<H extends AsyncPluginHooks & ParallelPluginHooks>(
     hookName: H,
     context: (plugin: Plugin) => ThisType<FunctionPluginHooks[H]>,
@@ -284,6 +284,7 @@ export async function createPluginContainer(
     }
 
     parse(code: string, opts: any = {}) {
+      // acorn 用于解析Javascript、得到js的ast语法书
       return parser.parse(code, {
         sourceType: 'module',
         ecmaVersion: 'latest',
