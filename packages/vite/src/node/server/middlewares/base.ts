@@ -27,7 +27,7 @@ export function baseMiddleware({
     }
 
     if (path === '/' || path === '/index.html') {
-      // redirect root visit to based url with search and hash
+      // 使用搜索和哈希将根访问重定向到基于 url
       res.writeHead(302, {
         Location: devBase + (parsed.search || '') + (parsed.hash || '')
       })

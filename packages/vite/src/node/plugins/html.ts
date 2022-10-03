@@ -930,6 +930,7 @@ export async function applyHtmlTransforms(
   hooks: IndexHtmlTransformHook[],
   ctx: IndexHtmlTransformContext
 ): Promise<string> {
+  // 多个hook、对html内容进行重写、每个hook重写完重新传入新的html内容
   for (const hook of hooks) {
     const res = await hook(html, ctx)
     if (!res) {

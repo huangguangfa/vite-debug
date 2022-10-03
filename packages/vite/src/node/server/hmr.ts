@@ -59,7 +59,7 @@ export async function handleHMRUpdate(
   const isEnv =
     config.inlineConfig.envFile !== false &&
     (fileName === '.env' || fileName.startsWith('.env.'))
-  // 如果是配置文件 | 或者依赖文件 | 环境变量文件 : 就需要重启服务
+  // 如果是配置文件 | 依赖文件 | 环境变量文件 : 就需要重启服务
   if (isConfig || isConfigDependency || isEnv) {
     // auto restart server
     debugHmr(`[config change] ${colors.dim(shortFile)}`)
@@ -79,7 +79,7 @@ export async function handleHMRUpdate(
 
   debugHmr(`[file change] ${colors.dim(shortFile)}`)
 
-  // （仅限开发人员）客户端本身不能热更新。
+  // （仅限开发人员）客户端本身不能热更新
   if (file.startsWith(normalizedClientDir)) {
     ws.send({
       type: 'full-reload',

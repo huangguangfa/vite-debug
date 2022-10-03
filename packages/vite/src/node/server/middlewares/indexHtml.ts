@@ -62,6 +62,7 @@ export function createDevHtmlTransformFn(
 }
 
 function getHtmlFilename(url: string, server: ViteDevServer) {
+  // 判断是否是重写的地址
   if (url.startsWith(FS_PREFIX)) {
     return decodeURIComponent(fsPathFromId(url))
   } else {
@@ -118,6 +119,7 @@ const processNodeUrl = (
     overwriteAttrValue(s, sourceCodeLocation, processedUrl)
   }
 }
+
 const devHtmlHook: IndexHtmlTransformHook = async (
   html,
   { path: htmlPath, filename, server, originalUrl }
@@ -273,23 +275,29 @@ const devHtmlHook: IndexHtmlTransformHook = async (
   }
 }
 
+// 客户访问html返回重写后的html内容、包括客户端的websocket连接代码
 export function indexHtmlMiddleware(
   server: ViteDevServer
 ): Connect.NextHandleFunction {
   // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
   return async function viteIndexHtmlMiddleware(req, res, next) {
+    // 是否执行过request.end()
     if (res.writableEnded) {
       return next()
     }
-
     const url = req.url && cleanUrl(req.url)
-    // spa-fallback always redirects to /index.html
+    // .html结尾，和请求头sec-fetch-dest不是script
     if (url?.endsWith('.html') && req.headers['sec-fetch-dest'] !== 'script') {
+      // 获取访问的真实html文件地址
       const filename = getHtmlFilename(url, server)
+      // 存在文件
       if (fs.existsSync(filename)) {
         try {
+          // 读取html文件内容
           let html = fs.readFileSync(filename, 'utf-8')
+          // 重写本地html的内容
           html = await server.transformIndexHtml(url, html, req.originalUrl)
+          // 返回结果
           return send(req, res, html, 'html', {
             headers: server.config.server.headers
           })

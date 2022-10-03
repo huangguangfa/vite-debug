@@ -515,12 +515,12 @@ export async function createServer(
 
   // 内部中间件 ------------------------------------------------------
 
-  // request timer
+  // 请求计时器
   if (process.env.DEBUG) {
     middlewares.use(timeMiddleware(root))
   }
 
-  // cors (enabled by default)
+  // 跨域处理
   const { cors } = serverConfig
   if (cors !== false) {
     middlewares.use(corsMiddleware(typeof cors === 'boolean' ? {} : cors))
