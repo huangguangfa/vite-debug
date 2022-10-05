@@ -478,6 +478,7 @@ export async function resolveConfig(
     config.root ? path.resolve(config.root) : process.cwd()
   )
 
+  // 这里设置vite内部的别名、如果客户端通过@vite/xxx 就直接通过别名映射查找到对应的地址
   const clientAlias = [
     { find: /^[\/]?@vite\/env/, replacement: () => ENV_ENTRY },
     { find: /^[\/]?@vite\/client/, replacement: () => CLIENT_ENTRY }
@@ -1139,7 +1140,7 @@ async function loadConfigFromBundledFile(
     return raw.__esModule ? raw.default : raw
   }
 }
-/*执行插件队列中带有handler的方法、目的是为了往修改配置*/
+/* 执行插件队列中带有handler的方法、目的是为了往修改配置 */
 async function runConfigHook(
   config: InlineConfig,
   plugins: Plugin[],

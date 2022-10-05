@@ -128,8 +128,10 @@ function cleanUrl(pathname: string): string {
 let isFirstUpdate = true
 const outdatedLinkTags = new WeakSet<HTMLLinkElement>()
 
+/* 处理文件更新的socket消息 */
 async function handleMessage(payload: HMRPayload) {
   switch (payload.type) {
+    // 连接成功
     case 'connected':
       console.debug(`[vite] connected.`)
       sendMessageBuffer()
@@ -141,6 +143,7 @@ async function handleMessage(payload: HMRPayload) {
         }
       }, __HMR_TIMEOUT__)
       break
+    // 文件变更需要更新处理
     case 'update':
       notifyListeners('vite:beforeUpdate', payload)
       // if this is the first update and there's already an error overlay, it
@@ -248,6 +251,7 @@ async function handleMessage(payload: HMRPayload) {
   }
 }
 
+// 通知
 function notifyListeners<T extends string>(
   event: T,
   data: InferCustomEventPayload<T>

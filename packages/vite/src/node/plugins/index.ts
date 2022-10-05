@@ -39,11 +39,11 @@ export async function resolvePlugins(
   const buildPlugins = isBuild
     ? (await import('../build')).resolveBuildPlugins(config)
     : { pre: [], post: [] }
-
   return [
     isWatch ? ensureWatchPlugin() : null,
     isBuild ? metadataPlugin() : null,
     preAliasPlugin(config),
+    // 别名配置
     aliasPlugin({ entries: config.resolve.alias }),
     // 把用户自己的前置插件放进来
     ...prePlugins,
