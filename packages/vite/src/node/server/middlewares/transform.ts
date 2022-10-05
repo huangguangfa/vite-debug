@@ -51,7 +51,7 @@ export function transformMiddleware(
 
   // Keep the named function. The name is visible in debug logs via `DEBUG=connect:dispatcher ...`
   return async function viteTransformMiddleware(req, res, next) {
-    // 只处理get请求
+    // 这个方法只处理get请求、或者角标加载
     if (req.method !== 'GET' || knownIgnoreList.has(req.url!)) {
       return next()
     }
@@ -150,7 +150,9 @@ export function transformMiddleware(
       }
 
       if (
+        // 判断是否加载js
         isJSRequest(url) ||
+        //
         isImportRequest(url) ||
         isCSSRequest(url) ||
         isHTMLProxy(url)

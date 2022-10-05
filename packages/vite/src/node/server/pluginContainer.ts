@@ -561,7 +561,7 @@ export async function createPluginContainer(
         () => [container.options as NormalizedInputOptions]
       )
     },
-    //
+
     async resolveId(rawId, importer = join(root, 'index.html'), options) {
       const skip = options?.skip
       const ssr = options?.ssr
