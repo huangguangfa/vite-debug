@@ -178,6 +178,7 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
       }
 
       const { filename, query } = parseVueRequest(id)
+
       // select corresponding block for sub-part virtual modules
       if (query.vue) {
         if (query.src) {
@@ -206,11 +207,13 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
 
     transform(code, id, opt) {
       const ssr = opt?.ssr === true
+      // 解析路径的文件名和携带的参数信息
       const { filename, query } = parseVueRequest(id)
+      // ？？？
       if (query.raw) {
         return
       }
-      // 不是黑名单 与 不是vue文件的请求
+      // 不是黑名单与query没有vue的key
       if (!filter(filename) && !query.vue) {
         if (
           !query.vue &&
@@ -224,9 +227,9 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
         }
         return
       }
-      // 不是vue文件请求
+      // query没有vue的key
       if (!query.vue) {
-        // main根节点请求
+        // vue文件解析的入口
         return transformMain(
           code,
           filename,

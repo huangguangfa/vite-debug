@@ -55,7 +55,6 @@ export function transformMiddleware(
     if (req.method !== 'GET' || knownIgnoreList.has(req.url!)) {
       return next()
     }
-
     let url: string
     try {
       // 把格式化的url重新格式化回来、目的为了转换参数
@@ -70,6 +69,7 @@ export function transformMiddleware(
     const withoutQuery = cleanUrl(url)
 
     try {
+      // sourceMap处理
       const isSourceMap = withoutQuery.endsWith('.map')
       // since we generate source map references, handle those requests here
       if (isSourceMap) {
@@ -118,10 +118,11 @@ export function transformMiddleware(
         }
       }
 
-      // check if public dir is inside root dir
+      // 检查公共目录是否在根目录中
       const publicDir = normalizePath(server.config.publicDir)
       const rootDir = normalizePath(server.config.root)
       if (publicDir.startsWith(rootDir)) {
+        // 得到公共路径
         const publicPath = `${publicDir.slice(rootDir.length)}/`
         // warn explicit public paths
         if (url.startsWith(publicPath)) {
@@ -150,7 +151,7 @@ export function transformMiddleware(
       }
 
       if (
-        // 判断是否加载js
+        // 判断是否加载 jsx|tsx|js|ts|vue|marko|svelte|astro
         isJSRequest(url) ||
         //
         isImportRequest(url) ||

@@ -19,6 +19,7 @@ export function createDescriptor(
   source: string,
   { root, isProduction, sourceMap, compiler }: ResolvedOptions
 ): SFCParseResult {
+  // vue/compiler-sfc 里面的 parse 方法
   const { descriptor, errors } = compiler.parse(source, {
     filename,
     sourceMap

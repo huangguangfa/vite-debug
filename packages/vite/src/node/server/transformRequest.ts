@@ -39,7 +39,7 @@ export interface TransformOptions {
 }
 
 export function transformRequest(
-  url: string,
+  url: string, // 文件路径
   server: ViteDevServer,
   options: TransformOptions = {}
 ): Promise<TransformResult | null> {
@@ -88,7 +88,7 @@ export function transformRequest(
         }
       })
   }
-
+  // 开始转换
   const request = doTransform(url, server, options, timestamp)
 
   // Avoid clearing the cache of future requests if aborted
@@ -100,7 +100,7 @@ export function transformRequest(
     }
   }
 
-  // Cache the request and clear it once processing is done
+  // 缓存请求并在处理完成后将其清除
   server._pendingRequests.set(cacheKey, {
     request,
     timestamp,
@@ -122,11 +122,12 @@ async function doTransform(
   const { config, pluginContainer } = server
   // 处理请求路径
   const prettyUrl = isDebug ? prettifyUrl(url, config.root) : ''
+  // ssr请求
   const ssr = !!options.ssr
   // 获取请求路径模块
   const module = await server.moduleGraph.getModuleByUrl(url, ssr)
 
-  // check if we have a fresh cache
+  // 检查是否有新的缓存
   const cached =
     module && (ssr ? module.ssrTransformResult : module.transformResult)
   if (cached) {
@@ -137,6 +138,7 @@ async function doTransform(
     // its import timestamps.
 
     isDebug && debugCache(`[memory] ${prettyUrl}`)
+    // 返回缓存
     return cached
   }
 
@@ -167,10 +169,12 @@ async function loadAndTransform(
   let map: SourceDescription['map'] = null
   // load
   const loadStart = isDebug ? performance.now() : 0
+  // 调用插件的load方法自定义加载内容
   const loadResult = await pluginContainer.load(id, { ssr })
+  // 没有内容
   if (loadResult == null) {
     // if this is an html request and there is no load result, skip ahead to
-    // SPA fallback.
+    // html直接返回
     if (options.html && !id.endsWith('.html')) {
       return null
     }
@@ -181,6 +185,7 @@ async function loadAndTransform(
     // like /service-worker.js or /api/users
     if (options.ssr || isFileServingAllowed(file, server)) {
       try {
+        // 通过完整路径读取文件内容/string
         code = await fs.readFile(file, 'utf-8')
         isDebug && debugLoad(`${timeFrom(loadStart)} [fs] ${prettyUrl}`)
       } catch (e) {
@@ -230,7 +235,7 @@ async function loadAndTransform(
 
   // transform
   const transformStart = isDebug ? performance.now() : 0
-  // 执行插件里的transform方法
+  // 执行插件里的transform方法、这里.vue文件调用的是plugin-vue插件
   const transformResult = await pluginContainer.transform(code, id, {
     inMap: map,
     ssr

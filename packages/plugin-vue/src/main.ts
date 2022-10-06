@@ -32,11 +32,11 @@ export async function transformMain(
 ) {
   const { devServer, isProduction, devToolsEnabled } = options
 
-  // prev descriptor is only set and used for hmr
+  // 上一个描述符仅用于hmr
   const prevDescriptor = getPrevDescriptor(filename)
-  // 做vue文件内容的拆分、把script、style、template拆出来
+  // 对vue文件字符串模版内容做拆分、得到描述文件里面包含script、style、template三大主体
   const { descriptor, errors } = createDescriptor(filename, code, options)
-
+  // 编译报错处理
   if (errors.length) {
     errors.forEach((error) =>
       pluginContext.error(createRollupError(filename, error))
@@ -49,7 +49,7 @@ export async function transformMain(
   // 对scoped做升序处理
   const hasScoped = descriptor.styles.some((s) => s.scoped)
 
-  // script处理
+  // script
   const { code: scriptCode, map: scriptMap } = await genScriptCode(
     descriptor,
     options,
@@ -271,6 +271,7 @@ async function genTemplateCode(
       ssr
     )
   } else {
+    // 通过src的方式
     if (template.src) {
       await linkSrcToDescriptor(
         template.src,
@@ -308,7 +309,7 @@ async function genScriptCode(
 }> {
   let scriptCode = `const _sfc_main = {}`
   let map: RawSourceMap | undefined
-  // 对script进行抽离组合、变成一个script配置对象
+  // 通过vue/compiler-sfc 的 compileScript 得到编译处理后的script
   const script = resolveScript(descriptor, options, ssr)
   if (script) {
     // 如果脚本是js/ts，没有外部src，可以直接放在主模块中
