@@ -135,7 +135,7 @@ async function handleMessage(payload: HMRPayload) {
     case 'connected':
       console.debug(`[vite] connected.`)
       sendMessageBuffer()
-      // proxy(nginx, docker) hmr ws maybe caused timeout,
+      // proxy(nginx, docker) hmr ws maybe caused timeout
       // so send ping package let ws keep alive.
       setInterval(() => {
         if (socket.readyState === socket.OPEN) {
@@ -157,8 +157,10 @@ async function handleMessage(payload: HMRPayload) {
         clearErrorOverlay()
         isFirstUpdate = false
       }
+      console.log('payload.updates', payload)
       payload.updates.forEach((update) => {
         if (update.type === 'js-update') {
+          // 触发更新文件callback
           queueUpdate(fetchUpdate(update))
         } else {
           // css-update
@@ -289,6 +291,7 @@ let queued: Promise<(() => void) | undefined>[] = []
  * so that they are invoked in the same order they were sent.
  * (otherwise the order may be inconsistent because of the http request round trip)
  */
+// 通知文件更新
 async function queueUpdate(p: Promise<(() => void) | undefined>) {
   queued.push(p)
   if (!pending) {
@@ -392,6 +395,7 @@ export function removeStyle(id: string): void {
   }
 }
 
+// 组装提取更新文件callback
 async function fetchUpdate({
   path,
   acceptedPath,
@@ -407,10 +411,11 @@ async function fetchUpdate({
   }
 
   const moduleMap = new Map<string, ModuleNamespace>()
+  // 变动文件和需要更新的文件一样
   const isSelfUpdate = path === acceptedPath
-
   // determine the qualified callbacks before we re-import the modules
   const qualifiedCallbacks = mod.callbacks.filter(({ deps }) =>
+    // 判断hot模块map映射表key（是一个string[]) 里面是否存在需要更新的id标识
     deps.includes(acceptedPath)
   )
 
@@ -418,8 +423,18 @@ async function fetchUpdate({
     const dep = acceptedPath
     const disposer = disposeMap.get(dep)
     if (disposer) await disposer(dataMap.get(dep))
+    // 取出路径和参数
     const [path, query] = dep.split(`?`)
     try {
+      console.log(
+        '22222',
+        base +
+          path.slice(1) +
+          `?${explicitImportRequired ? 'import&' : ''}t=${timestamp}${
+            query ? `&${query}` : ''
+          }`
+      )
+      // 重新请求最新文件内容
       const newMod: ModuleNamespace = await import(
         /* @vite-ignore */
         base +
@@ -428,6 +443,7 @@ async function fetchUpdate({
             query ? `&${query}` : ''
           }`
       )
+      // 保存最新文件的sfc
       moduleMap.set(dep, newMod)
     } catch (e) {
       warnFailedFetch(e, dep)
@@ -436,9 +452,14 @@ async function fetchUpdate({
 
   return () => {
     for (const { deps, fn } of qualifiedCallbacks) {
+      console.log(
+        'deps',
+        deps.map((dep) => moduleMap.get(dep))
+      )
       fn(deps.map((dep) => moduleMap.get(dep)))
     }
     const loggedPath = isSelfUpdate ? path : `${acceptedPath} via ${path}`
+    // 控制台输出更新文件信息
     console.debug(`[vite] hot updated: ${loggedPath}`)
   }
 }
@@ -470,13 +491,18 @@ const dataMap = new Map<string, any>()
 const customListenersMap: CustomListenersMap = new Map()
 const ctxToListenersMap = new Map<string, CustomListenersMap>()
 
+/*
+  每个vue文件都会通过createHotContext方法创建一个当前文件的配置观察对象、通过自定义文件id或者默认使用文件名称做唯一映射
+*/
 export function createHotContext(ownerPath: string): ViteHotContext {
+  // 初始化设置映射
   if (!dataMap.has(ownerPath)) {
     dataMap.set(ownerPath, {})
   }
 
   // when a file is hot updated, a new context is created
   // clear its stale callbacks
+  // 保证每次创建callbacks都是新的
   const mod = hotModulesMap.get(ownerPath)
   if (mod) {
     mod.callbacks = []
@@ -498,7 +524,7 @@ export function createHotContext(ownerPath: string): ViteHotContext {
 
   const newListeners: CustomListenersMap = new Map()
   ctxToListenersMap.set(ownerPath, newListeners)
-
+  // 收集文件变动的callback
   function acceptDeps(deps: string[], callback: HotCallback['fn'] = () => {}) {
     const mod: HotModule = hotModulesMap.get(ownerPath) || {
       id: ownerPath,
