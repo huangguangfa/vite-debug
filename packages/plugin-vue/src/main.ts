@@ -133,12 +133,12 @@ export async function transformMain(
     if (prevDescriptor && isOnlyTemplateChanged(prevDescriptor, descriptor)) {
       output.push(`export const _rerender_only = true`)
     }
-    // 热更新
+    // 热更新、重新渲染的方式用的是vue提供的、这个需要看vue/core源码才能清楚具体的渲染流程
     output.push(
       `import.meta.hot.accept(mod => {`,
-      `console.log('hmr有更新', mod)`,
       `  if (!mod) return`,
-      `  const { default: updated, _rerender_only } = mod`,
+      `  const { default: updated, _rerender_only } = mod;`,
+      `console.log('hmr有更新', mod, _rerender_only)`,
       `  if (_rerender_only) {`,
       `    __VUE_HMR_RUNTIME__.rerender(updated.__hmrId, updated.render)`,
       `  } else {`,

@@ -11,7 +11,7 @@ import Assets from './Assets.vue'
 
 const res = getCurrentInstance()
 
-console.log(11, res)
+console.log(11333, res)
 
 const time = ref('loading...')
 
