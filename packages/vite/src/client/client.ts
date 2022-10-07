@@ -253,7 +253,7 @@ async function handleMessage(payload: HMRPayload) {
   }
 }
 
-// 通知
+// 自定义事件通知
 function notifyListeners<T extends string>(
   event: T,
   data: InferCustomEventPayload<T>
@@ -267,6 +267,7 @@ function notifyListeners(event: string, data: any): void {
 
 const enableOverlay = __HMR_ENABLE_OVERLAY__
 
+// 报错页面插入提示
 function createErrorOverlay(err: ErrorPayload['err']) {
   if (!enableOverlay) return
   clearErrorOverlay()
