@@ -1,5 +1,5 @@
 <template>
-  <div class="comments"><!--hello--></div>
+  <div class="comments">hello</div>
   <h1>Vue SFCs2</h1>
   {{ time as string }}
   <Assets></Assets>
@@ -11,7 +11,7 @@ import Assets from './Assets.vue'
 
 const res = getCurrentInstance()
 
-console.log(11333, res)
+console.log(1133355511, res)
 
 const time = ref('loading...')
 

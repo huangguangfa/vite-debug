@@ -9,7 +9,9 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "axios": "^0.27.2",
     "lodash-es": "^4.17.21",
+    "qs": "^6.11.0",
     "vue": "^3.2.39"
   },
   "devDependencies": {

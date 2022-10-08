@@ -4,9 +4,8 @@ import { vueI18nPlugin } from './CustomBlockPlugin'
 function myPlugin() {
   return {
     name: 'transform-file',
-
-    transform(src, id) {
-      console.log(src, id)
+    transform(code, id) {
+      debugger
     }
   }
 }
@@ -23,7 +22,8 @@ export default defineConfig({
       reactivityTransform: true
     }),
     splitVendorChunkPlugin(),
-    vueI18nPlugin
+    vueI18nPlugin,
+    myPlugin()
   ],
   build: {
     // to make tests faster
