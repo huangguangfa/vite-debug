@@ -86,7 +86,7 @@ function setupWebSocket(
     { once: true }
   )
 
-  // Listen for messages
+  // 监听socket的消息
   socket.addEventListener('message', async ({ data }) => {
     handleMessage(JSON.parse(data))
   })
@@ -145,20 +145,24 @@ async function handleMessage(payload: HMRPayload) {
       break
     // 文件变更需要更新处理
     case 'update':
+      // 自定义事件的通知
       notifyListeners('vite:beforeUpdate', payload)
       // if this is the first update and there's already an error overlay, it
       // means the page opened with existing server compile error and the whole
       // module script failed to load (since one of the nested imports is 500).
       // in this case a normal update won't work and a full reload is needed.
+      // 判断是否第一次更新且有错误页面
       if (isFirstUpdate && hasErrorOverlay()) {
         window.location.reload()
         return
       } else {
+        // 关闭错误页面
         clearErrorOverlay()
         isFirstUpdate = false
       }
-      console.log('payload.updates', payload)
+      // 循环更新列表、每个更新item里面都会携带所变动的文件信息
       payload.updates.forEach((update) => {
+        // 是否js更新
         if (update.type === 'js-update') {
           // 触发更新文件callback
           queueUpdate(fetchUpdate(update))
@@ -305,6 +309,7 @@ async function queueUpdate(p: Promise<(() => void) | undefined>) {
   }
 }
 
+// 尝试重新连接socket
 async function waitForSuccessfulPing(
   socketProtocol: string,
   hostAndPath: string,
@@ -503,13 +508,13 @@ export function createHotContext(ownerPath: string): ViteHotContext {
 
   // when a file is hot updated, a new context is created
   // clear its stale callbacks
-  // 保证每次创建callbacks都是新的
+  // 如果存在之前已经设置关联的文件依赖、那就把callback清空
   const mod = hotModulesMap.get(ownerPath)
   if (mod) {
     mod.callbacks = []
   }
 
-  // clear stale custom event listeners
+  // 清除旧的自定义事件
   const staleListeners = ctxToListenersMap.get(ownerPath)
   if (staleListeners) {
     for (const [event, staleFns] of staleListeners) {
@@ -522,19 +527,20 @@ export function createHotContext(ownerPath: string): ViteHotContext {
       }
     }
   }
-
+  // 新的自定义事件
   const newListeners: CustomListenersMap = new Map()
   ctxToListenersMap.set(ownerPath, newListeners)
-  // 收集文件变动的callback
+  // 利用闭包、收集文件变动的callback
   function acceptDeps(deps: string[], callback: HotCallback['fn'] = () => {}) {
     const mod: HotModule = hotModulesMap.get(ownerPath) || {
       id: ownerPath,
       callbacks: []
     }
     mod.callbacks.push({
-      deps,
-      fn: callback
+      deps, // 关于文件的依赖信息
+      fn: callback // 热更新callback
     })
+    // 保存在映射表
     hotModulesMap.set(ownerPath, mod)
   }
 
@@ -542,7 +548,7 @@ export function createHotContext(ownerPath: string): ViteHotContext {
     get data() {
       return dataMap.get(ownerPath)
     },
-
+    // 订阅文件变动的回调
     accept(deps?: any, callback?: any) {
       if (typeof deps === 'function' || !deps) {
         // self-accept: hot.accept(() => {})
@@ -582,7 +588,7 @@ export function createHotContext(ownerPath: string): ViteHotContext {
       location.reload()
     },
 
-    // custom events
+    // 监听自定义事件
     on(event, cb) {
       const addToMap = (map: Map<string, any[]>) => {
         const existing = map.get(event) || []
@@ -592,7 +598,7 @@ export function createHotContext(ownerPath: string): ViteHotContext {
       addToMap(customListenersMap)
       addToMap(newListeners)
     },
-
+    // 发送自定义事件
     send(event, data) {
       messageBuffer.push(JSON.stringify({ type: 'custom', event, data }))
       sendMessageBuffer()

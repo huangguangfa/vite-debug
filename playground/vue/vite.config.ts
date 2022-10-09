@@ -7,7 +7,6 @@ function myPlugin() {
     transform(code, id) {
       if (id.endsWith('.vue')) {
         code += `
-          import { getCurrentInstance } from 'vue';
           
           console.log("gf")
         `
