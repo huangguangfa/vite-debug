@@ -903,6 +903,7 @@ export function postImportMapHook(): IndexHtmlTransformHook {
   }
 }
 
+// vite独有钩子 resolveHtmlTransforms
 export function resolveHtmlTransforms(
   plugins: readonly Plugin[]
 ): [IndexHtmlTransformHook[], IndexHtmlTransformHook[]] {

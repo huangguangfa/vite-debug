@@ -509,6 +509,7 @@ export async function createServer(
 
   // 客户端通过插件和vite进行通信
   const postHooks: ((() => void) | void)[] = []
+  // 执行vite独有钩子 configureServer
   for (const hook of config.getSortedPluginHooks('configureServer')) {
     postHooks.push(await hook(server))
   }

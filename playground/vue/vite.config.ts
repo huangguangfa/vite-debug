@@ -5,7 +5,14 @@ function myPlugin() {
   return {
     name: 'transform-file',
     transform(code, id) {
-      debugger
+      if (id.endsWith('.vue')) {
+        code += `
+          import { getCurrentInstance } from 'vue';
+          
+          console.log("gf")
+        `
+        return code
+      }
     }
   }
 }

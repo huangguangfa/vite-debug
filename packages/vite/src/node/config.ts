@@ -745,7 +745,7 @@ export async function resolveConfig(
     createPluginHookUtils(resolvedConfig.worker.plugins)
   )
 
-  // 执行插件的configResolved钩子 、在这个钩子里面可以获取最终的配置
+  // 执行插件独有插件回调configResolved钩子 、在这个钩子里面可以获取最终的配置
   await Promise.all([
     ...resolved
       .getSortedPluginHooks('configResolved')
@@ -1140,14 +1140,13 @@ async function loadConfigFromBundledFile(
     return raw.__esModule ? raw.default : raw
   }
 }
-/* 执行插件队列中带有handler的方法、目的是为了往修改配置 */
+/* vite独有插件config */
 async function runConfigHook(
   config: InlineConfig,
   plugins: Plugin[],
   configEnv: ConfigEnv
 ): Promise<InlineConfig> {
   let conf = config
-
   for (const p of getSortedPluginsByHook('config', plugins)) {
     const hook = p.config
     const handler = hook && 'handler' in hook ? hook.handler : hook
@@ -1158,7 +1157,6 @@ async function runConfigHook(
       }
     }
   }
-
   return conf
 }
 
@@ -1168,6 +1166,7 @@ export function getDepOptimizationConfig(
 ): DepOptimizationConfig {
   return ssr ? config.ssr.optimizeDeps : config.optimizeDeps
 }
+
 export function isDepsOptimizerEnabled(
   config: ResolvedConfig,
   ssr: boolean

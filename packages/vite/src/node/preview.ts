@@ -88,6 +88,7 @@ export async function preview(
 
   // apply server hooks from plugins
   const postHooks: ((() => void) | void)[] = []
+  // vite独有钩子 configurePreviewServer
   for (const hook of config.getSortedPluginHooks('configurePreviewServer')) {
     postHooks.push(await hook({ middlewares: app, httpServer }))
   }

@@ -155,7 +155,6 @@ export async function createPluginContainer(
   // 创建获取plugin里面某个方法
   const { getSortedPluginHooks, getSortedPlugins } =
     createPluginHookUtils(plugins)
-
   const seenResolves: Record<string, true | undefined> = {}
   const debugResolve = createDebugger('vite:resolve')
   const debugPluginResolve = createDebugger('vite:plugin-resolve', {
@@ -267,8 +266,9 @@ export async function createPluginContainer(
   }
 
   // we should create a new context for each async hook pipeline so that the
-  // active plugin in that pipeline can be tracked in a concurrency-safe manner.
+  // active plugin in that pipeline can be tracked in a concurrency-safe manner
   // using a class to make creating new contexts more efficient
+
   class Context implements PluginContext {
     meta = minimalContext.meta
     ssr = false
