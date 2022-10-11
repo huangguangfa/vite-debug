@@ -75,12 +75,14 @@ function setupWebSocket(
   hostAndPath: string,
   onCloseWithoutOpen?: () => void
 ) {
+  // 连接
   const socket = new WebSocket(`${protocol}://${hostAndPath}`, 'vite-hmr')
   let isOpened = false
-
+  // 监听socket的打开事件
   socket.addEventListener(
     'open',
     () => {
+      // 标记状态
       isOpened = true
     },
     { once: true }
@@ -91,7 +93,7 @@ function setupWebSocket(
     handleMessage(JSON.parse(data))
   })
 
-  // ping server
+  // 断开后的尝试连接处理
   socket.addEventListener('close', async ({ wasClean }) => {
     if (wasClean) return
 

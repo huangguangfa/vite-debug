@@ -1,20 +1,21 @@
 import { defineConfig, splitVendorChunkPlugin } from 'vite'
 import vuePlugin from '@vitejs/plugin-vue'
 import { vueI18nPlugin } from './CustomBlockPlugin'
-function myPlugin() {
+
+const templateCommentReg = /<!--[\s\S]*?-->/g
+
+function templateComment() {
   return {
-    name: 'transform-file',
-    transform(code, id) {
-      if (id.endsWith('.vue')) {
-        code += `
-          
-          console.log("gf")
-        `
+    name: 'vite-plugin-templateComment',
+    transform(code: string) {
+      if (templateCommentReg.test(code)) {
+        code = code.replace(templateCommentReg, '')
         return code
       }
     }
   }
 }
+
 export default defineConfig({
   resolve: {
     alias: {
@@ -24,12 +25,12 @@ export default defineConfig({
   },
 
   plugins: [
+    templateComment(),
     vuePlugin({
       reactivityTransform: true
     }),
     splitVendorChunkPlugin(),
-    vueI18nPlugin,
-    myPlugin()
+    vueI18nPlugin
   ],
   build: {
     // to make tests faster

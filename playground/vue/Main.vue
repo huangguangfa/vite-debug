@@ -1,13 +1,17 @@
 <template>
   <div class="comments">hello</div>
+  <!-- 注释测试 -->
   <h1>Vue SFCs2</h1>
+  <!--删除的内容-->
   {{ time as string }}
-  <Assets></Assets>
+  <!-- 
+    <Assets></Assets> 
+  -->
 </template>
 
 <script setup lang="ts">
 import { ref, getCurrentInstance } from 'vue'
-import Assets from './Assets.vue'
+// import Assets from './Assets.vue'
 
 const res = getCurrentInstance()
 
