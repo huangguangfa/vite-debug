@@ -22,9 +22,12 @@ const importMetaUrl = new URL(import.meta.url)
 
 // use server configuration, then fallback to inference
 const serverHost = __SERVER_HOST__
+// 协议判断
 const socketProtocol =
   __HMR_PROTOCOL__ || (location.protocol === 'https:' ? 'wss' : 'ws')
+// 端口
 const hmrPort = __HMR_PORT__
+// 地址
 const socketHost = `${__HMR_HOSTNAME__ || importMetaUrl.hostname}:${
   hmrPort || importMetaUrl.port
 }${__HMR_BASE__}`
@@ -33,9 +36,10 @@ const base = __BASE__ || '/'
 const messageBuffer: string[] = []
 
 let socket: WebSocket
+// 直接初始化连接
 try {
   let fallback: (() => void) | undefined
-  // only use fallback when port is inferred to prevent confusion
+  // 不存在端口的特别处理、不存在端口就会连接异常、然后重新走fallback
   if (!hmrPort) {
     fallback = () => {
       // fallback to connecting directly to the hmr server
@@ -96,13 +100,14 @@ function setupWebSocket(
   // 断开后的尝试连接处理
   socket.addEventListener('close', async ({ wasClean }) => {
     if (wasClean) return
-
+    // 连接失败的回调
     if (!isOpened && onCloseWithoutOpen) {
       onCloseWithoutOpen()
       return
     }
 
     console.log(`[vite] server connection lost. polling for restart...`)
+    // 尝试连接
     await waitForSuccessfulPing(protocol, hostAndPath)
     location.reload()
   })
@@ -280,6 +285,7 @@ function createErrorOverlay(err: ErrorPayload['err']) {
   document.body.appendChild(new ErrorOverlay(err))
 }
 
+// 移除错误提示页面
 function clearErrorOverlay() {
   document
     .querySelectorAll(overlayId)
@@ -351,7 +357,7 @@ const sheetsMap = new Map<
   string,
   HTMLStyleElement | CSSStyleSheet | undefined
 >()
-
+// 更新style、会把每个vue文件的style生成一个标签块、并且通过判断scoped对class添加唯一属性
 export function updateStyle(id: string, content: string): void {
   let style = sheetsMap.get(id)
   if (supportsConstructedSheet && !content.includes('@import')) {
@@ -359,7 +365,6 @@ export function updateStyle(id: string, content: string): void {
       removeStyle(id)
       style = undefined
     }
-
     if (!style) {
       style = new CSSStyleSheet()
       // @ts-expect-error: using experimental API
@@ -611,7 +616,7 @@ export function createHotContext(ownerPath: string): ViteHotContext {
 }
 
 /**
- * urls here are dynamic import() urls that couldn't be statically analyzed
+ * 这里的url是无法静态分析的动态import（）url
  */
 export function injectQuery(url: string, queryToInject: string): string {
   // skip urls that won't be handled by vite

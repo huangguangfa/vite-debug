@@ -76,9 +76,8 @@ export async function handleHMRUpdate(
     }
     return
   }
-
+  // 文件变动信息输出
   debugHmr(`[file change] ${colors.dim(shortFile)}`)
-
   // （仅限开发人员）客户端本身不能热更新
   if (file.startsWith(normalizedClientDir)) {
     ws.send({
@@ -89,7 +88,6 @@ export async function handleHMRUpdate(
   }
   // 在模块队列里面找到当前变动的文件信息
   const mods = moduleGraph.getModulesByFile(file)
-
   // check if any plugin wants to perform custom HMR handling
   const timestamp = Date.now()
   const hmrContext: HmrContext = {
@@ -99,7 +97,7 @@ export async function handleHMRUpdate(
     read: () => readModifiedFile(file),
     server
   }
-  // 处理 vite插件的热更新钩子(handleHotUpdate) see : https://cn.vitejs.dev/guide/api-plugin.html#vite-specific-hooks
+  // 执行vite插件的热更新钩子(handleHotUpdate) see : https://cn.vitejs.dev/guide/api-plugin.html#vite-specific-hooks
   for (const hook of config.getSortedPluginHooks('handleHotUpdate')) {
     const filteredModules = await hook(hmrContext)
     if (filteredModules) {
@@ -108,7 +106,7 @@ export async function handleHMRUpdate(
   }
   // 如果文件依赖模块没有一个
   if (!hmrContext.modules.length) {
-    // html file cannot be hot updated
+    // 判读是否是html更新、但是html无法热更新所以需要location.reload()
     if (file.endsWith('.html')) {
       config.logger.info(colors.green(`page reload `) + colors.dim(shortFile), {
         clear: true,
@@ -121,7 +119,7 @@ export async function handleHMRUpdate(
           : '/' + normalizePath(path.relative(config.root, file))
       })
     } else {
-      // loaded but not in the module graph, probably not js
+      // 已加载但不在模块图中，可能不是js
       debugHmr(`[no modules matched] ${colors.dim(shortFile)}`)
     }
     return
