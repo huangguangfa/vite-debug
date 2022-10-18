@@ -8,12 +8,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, getCurrentInstance } from 'vue'
+import { ref } from 'vue'
 import Assets from './Assets.vue'
 
-const res = getCurrentInstance()
-
-console.log(1133355511, res)
+console.log(1133355511, import.meta.env)
 
 const time = ref('loading...')
 

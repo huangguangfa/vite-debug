@@ -15,7 +15,7 @@ function templateComment() {
     }
   }
 }
-
+const envPrefix = 'KY_DOC'
 export default defineConfig({
   resolve: {
     alias: {
@@ -32,6 +32,8 @@ export default defineConfig({
     splitVendorChunkPlugin(),
     vueI18nPlugin
   ],
+  envDir: './env',
+  envPrefix,
   build: {
     // to make tests faster
     minify: false,
