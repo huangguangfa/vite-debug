@@ -405,7 +405,7 @@ async function doBuild(
   if (isDepsOptimizerEnabled(config, ssr)) {
     await initDepsOptimizer(config)
   }
-
+  // 组装rollup打包配置对象
   const rollupOptions: RollupOptions = {
     context: 'globalThis',
     preserveEntrySignatures: ssr

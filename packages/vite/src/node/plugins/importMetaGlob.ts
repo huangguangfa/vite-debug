@@ -63,6 +63,7 @@ export function importGlobPlugin(config: ResolvedConfig): Plugin {
     },
     async transform(code, id) {
       if (!code.includes('import.meta.glob')) return
+
       const result = await transformGlobImport(
         code,
         id,
@@ -324,6 +325,7 @@ export async function transformGlobImport(
   root = slash(root)
   const isVirtual = isVirtualModule(id)
   const dir = isVirtual ? undefined : dirname(id)
+  // 解析出使用import.meta.glob信息、包括使用了什么options
   const matches = await parseImportGlob(
     code,
     isVirtual ? undefined : id,
@@ -332,7 +334,7 @@ export async function transformGlobImport(
   )
   const matchedFiles = new Set<string>()
 
-  // TODO: backwards compatibility
+  // vite3.0向后兼容
   matches.forEach((i) => {
     if (i.type === 'globEager') i.options.eager = true
     if (i.type === 'globEagerDefault') {

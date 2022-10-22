@@ -10,8 +10,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 // import Assets from './Assets.vue'
+const jsList = import.meta.glob('./js/**', { eager: true })
 const useEnv = import.meta.env
-console.log(1133355511, useEnv)
+console.log(1133355511, useEnv, jsList)
 
 const time = ref('loading...')
 

@@ -25,6 +25,7 @@ import { metadataPlugin } from './metadata'
 import { dynamicImportVarsPlugin } from './dynamicImportVars'
 import { importGlobPlugin } from './importMetaGlob'
 
+// 插件的集合、vite默认使用的一些内部插件
 export async function resolvePlugins(
   config: ResolvedConfig,
   prePlugins: Plugin[],
@@ -100,7 +101,8 @@ export async function resolvePlugins(
     // internal server-only plugins are always applied after everything else
     ...(isBuild
       ? []
-      : [clientInjectionsPlugin(config), importAnalysisPlugin(config)])
+      : // 不是buid
+        [clientInjectionsPlugin(config), importAnalysisPlugin(config)])
     // filter是为了排除掉false部分的[fn,0,false].filter(item => Boolean(item))
   ].filter(Boolean) as Plugin[]
 }
@@ -109,6 +111,7 @@ export function createPluginHookUtils(
   plugins: readonly Plugin[]
 ): PluginHookUtils {
   // 对插件做排序 前置 正常 后置 还做了缓存处理
+
   const sortedPluginsCache = new Map<keyof Plugin, Plugin[]>()
   function getSortedPlugins(hookName: keyof Plugin): Plugin[] {
     if (sortedPluginsCache.has(hookName))
