@@ -599,7 +599,8 @@ export function importAnalysisPlugin(config: ResolvedConfig): Plugin {
         // inject import.meta.env
         let env = `import.meta.env = ${JSON.stringify({
           ...config.env,
-          SSR: !!ssr
+          SSR: !!ssr,
+          aaa: 111
         })};`
         // account for user env defines
         for (const key in config.define) {

@@ -4,14 +4,14 @@
   <h1>Vue SFCs2</h1>
   <!--删除的内容-->
   {{ time as string }}
-  <Assets></Assets>
+  <!-- <Assets></Assets> -->
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
-import Assets from './Assets.vue'
-
-console.log(1133355511, import.meta.env)
+// import Assets from './Assets.vue'
+const useEnv = import.meta.env
+console.log(1133355511, useEnv)
 
 const time = ref('loading...')
 

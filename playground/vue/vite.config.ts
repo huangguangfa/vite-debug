@@ -25,12 +25,12 @@ export default defineConfig({
   },
 
   plugins: [
-    templateComment(),
+    // templateComment(),
     vuePlugin({
       reactivityTransform: true
-    }),
-    splitVendorChunkPlugin(),
-    vueI18nPlugin
+    })
+    // splitVendorChunkPlugin(),
+    // vueI18nPlugin
   ],
   envDir: './env',
   envPrefix,

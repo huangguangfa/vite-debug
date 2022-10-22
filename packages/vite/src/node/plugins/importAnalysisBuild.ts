@@ -330,7 +330,6 @@ export function buildImportAnalysisPlugin(config: ResolvedConfig): Plugin {
       ) {
         str().prepend(`import { ${preloadMethod} } from "${preloadHelperId}";`)
       }
-
       if (s) {
         return {
           code: s.toString(),

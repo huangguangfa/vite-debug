@@ -36,7 +36,7 @@ export function definePlugin(config: ResolvedConfig): Plugin {
     userDefine[key] = typeof val === 'string' ? val : JSON.stringify(val)
   }
 
-  // during dev, import.meta properties are handled by importAnalysis plugin.
+  // during dev, import.meta properties are handled by importAnalysis plugin
   // ignore replace import.meta.env in lib build
   const importMetaKeys: Record<string, string> = {}
   const importMetaFallbackKeys: Record<string, string> = {}

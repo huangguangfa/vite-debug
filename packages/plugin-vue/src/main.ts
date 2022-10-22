@@ -236,7 +236,6 @@ export async function transformMain(
     resolvedCode = code
     resolvedMap = resolvedMap ? (map as any) : resolvedMap
   }
-
   return {
     code: resolvedCode,
     map: resolvedMap || {

@@ -230,7 +230,7 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
       // query没有vue的key
       if (!query.vue) {
         // vue文件解析的入口
-        return transformMain(
+        const vueTransformContent = transformMain(
           code,
           filename,
           options,
@@ -238,6 +238,8 @@ export default function vuePlugin(rawOptions: Options = {}): Plugin {
           ssr,
           customElementFilter(filename)
         )
+
+        return vueTransformContent
       } else {
         // sub block request
         const descriptor = query.src
