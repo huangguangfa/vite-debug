@@ -1,11 +1,5 @@
 lockfileVersion: 5.4
 
-overrides:
-  vite: workspace:*
-  '@vitejs/plugin-vue': workspace:*
-
-packageExtensionsChecksum: 696422bac84dd936748019990f84746e
-
 importers:
 
   .:
@@ -1250,6 +1244,16 @@ importers:
 
   playground/worker/dep-to-optimize:
     specifiers: {}
+
+  ppt/vite-npm-example:
+    specifiers:
+      cac: ^6.7.14
+      chokidar: ^3.5.3
+      picocolors: ^1.0.0
+    devDependencies:
+      cac: 6.7.14
+      chokidar: 3.5.3
+      picocolors: 1.0.0
 
 packages:
 
