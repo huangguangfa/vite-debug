@@ -32,6 +32,10 @@ export default defineConfig({
     // splitVendorChunkPlugin(),
     // vueI18nPlugin
   ],
+  define: {
+    isCustomStatus: true,
+    'import.meta.env.MODE': 222
+  },
   envDir: './env',
   envPrefix,
   build: {

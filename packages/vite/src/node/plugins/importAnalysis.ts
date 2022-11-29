@@ -11,6 +11,7 @@ import { findStaticImports, parseStaticImport } from 'mlly'
 import { makeLegalIdentifier } from '@rollup/pluginutils'
 import { getDepOptimizationConfig } from '..'
 import type { ViteDevServer } from '..'
+
 import {
   CLIENT_DIR,
   CLIENT_PUBLIC_PATH,

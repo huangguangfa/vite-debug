@@ -383,7 +383,7 @@ export async function resolveConfig(
   }
   // 取出指令携带的配置文件地址 --configFile /xxx/xxx/vite.config.ts
   let { configFile } = config
-  // 可能存在一定知道没有配置文件的情况 configFile === false
+  // 可能存在一定没有配置文件的情况 configFile === false
   if (configFile !== false) {
     // 加载本地根节点的vite.cofnig.xxx文件内容
     const loadResult = await loadConfigFromFile(
