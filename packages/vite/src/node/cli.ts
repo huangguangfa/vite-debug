@@ -11,12 +11,10 @@ import { resolveConfig } from '.'
 /* 
   cac: 一款轻量级的交互指令收集器 (https://www.npmjs.com/package/cac)
   通过配置的option、用户如果有带上指令的话就会被保存在操作对象中、最后在操作对象里面取出用户传入的配置信息
-
   const cli = require("cac")()
   cli.option("-t, --type <type>", "Choose a project type")
   const parsed = cli.parse()
   console.log(JSON.stringify(parsed, null, 2)); // 执行 node index.js --type test 获取用户的选项配置
-
   picocolors: 终端文字颜色
 */
 const cli = cac('vite')
@@ -113,9 +111,7 @@ cli
       }
       // 启动服务
       await server.listen()
-
       const info = server.config.logger.info
-
       // @ts-ignore
       const viteStartTime = global.__vite_start_time ?? false
       const startupDurationString = viteStartTime
@@ -125,7 +121,6 @@ cli
             )} ms`
           )
         : ''
-
       info(
         `\n  ${colors.green(
           `${colors.bold('VITE')} v${VERSION}`
