@@ -297,7 +297,7 @@ export async function createServer(
   // 得到所有配置
   const config = await resolveConfig(inlineConfig, 'serve', 'development')
   const { root, server: serverConfig } = config
-  // 获取HTTPS配置
+  // 获取HTTPS配
   const httpsOptions = await resolveHttpsConfig(
     config.server.https,
     config.cacheDir

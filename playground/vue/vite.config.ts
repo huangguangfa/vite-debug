@@ -36,6 +36,9 @@ export default defineConfig({
     isCustomStatus: true,
     'import.meta.env.MODE': 222
   },
+  server: {
+    host: true
+  },
   envDir: './env',
   envPrefix,
   build: {

@@ -12,7 +12,8 @@ cli
 cli.help()
 cli.version('0.0.9')
 const parsed = cli.parse()
-// console.log('parsed', parsed)
+
+console.log('parsed', parsed)
 
 // node index.js createUser  --name xy --age 18
 // node index.js createUser  --name xy

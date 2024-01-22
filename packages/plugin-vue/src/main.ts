@@ -87,7 +87,7 @@ export async function transformMain(
     }
   }
 
-  // styles
+  // styles 这时候只是生成一个css的临时链接
   const stylesCode = await genStyleCode(
     descriptor,
     pluginContext,

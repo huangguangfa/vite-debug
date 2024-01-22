@@ -109,7 +109,7 @@ cli
       if (!server.httpServer) {
         throw new Error('HTTP server not available')
       }
-      // 启动服务
+      // 启动服务1
       await server.listen()
       const info = server.config.logger.info
       // @ts-ignore
